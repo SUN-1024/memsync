@@ -1,0 +1,14 @@
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local agent / tool state (consuming projects may add their own ignores)
+.claude/local/
+.claude/settings.local.json

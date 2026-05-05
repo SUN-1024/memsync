@@ -1,0 +1,32 @@
+# AGENTS.md
+
+Read these files in order before doing any work in this repository:
+
+1. `.ai/README.md`
+2. `.ai/project.md`
+3. `.ai/architecture.md`
+4. `.ai/definition-of-done.md`
+5. `.ai/review-checklist.md`
+6. `.ai/memory.md`
+7. `.ai/handoff.md`
+
+These files are the shared source of truth for every agent (Claude Code,
+Codex, and any other tool that respects this convention). Do not duplicate
+their content into this file or anywhere else in the repo root.
+
+## Update rule
+
+After any future implementation, debugging, refactor, review, documentation,
+setup, dependency, config, or test-related task, update `.ai/handoff.md`
+**before** reporting the task as done.
+
+If stable project knowledge is discovered during the task — a convention, a
+constraint, a pitfall worth remembering across sessions — update `.ai/memory.md`
+or the most relevant `.ai/` file in the same change.
+
+If the project's purpose, stack, or architecture itself changed, update
+`.ai/project.md` or `.ai/architecture.md` directly so the next session sees
+the truth.
+
+Never write `TODO`, `TBD`, or placeholder text into any `.ai/` file. If a fact
+is genuinely undefined, write one clear sentence saying so.
