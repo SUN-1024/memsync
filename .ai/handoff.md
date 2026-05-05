@@ -5,70 +5,65 @@ sections with the latest state; this file is not a changelog.
 
 ## Latest task
 
-Initial scaffold of `memsync`: create the `.ai/`
-shared-memory layout, the `CLAUDE.md` and `AGENTS.md` adapters, bilingual
-READMEs, MIT license, and `.gitignore`; commit; publish to GitHub as a public
-repository.
+Enable the GitHub *template repository* flag and document a third adoption
+path — paste a self-contained prompt into a fresh Claude Code or Codex
+session — alongside the existing GitHub-template and copy-into-repo paths.
 
 ## Files changed
 
-- `.ai/README.md` — new
-- `.ai/project.md` — new
-- `.ai/architecture.md` — new
-- `.ai/definition-of-done.md` — new
-- `.ai/review-checklist.md` — new
-- `.ai/memory.md` — new
-- `.ai/handoff.md` — new (this file)
-- `CLAUDE.md` — new
-- `AGENTS.md` — new
-- `README.md` — new (English)
-- `README.zh.md` — new (Simplified Chinese)
-- `LICENSE` — new (MIT)
-- `.gitignore` — new
+- `README.md` — Option A wording updated (template flag is on); new
+  Option C added with the full English prompt.
+- `README.zh.md` — 方式 A 措辞同步;新增方式 C,附中文提示词。
+- `.ai/handoff.md` — this file, rewritten to reflect the latest task.
 
 ## Commands run
 
-- `mkdir -p ~/projects/memsync/.ai`
-- `git init -b main`
-- `git add .`
-- `git commit -m "chore: initial scaffold for claude+codex shared memory"`
-- `gh repo create SUN-1024/memsync --public --source . --push`
+- `gh repo edit SUN-1024/memsync --template`
+- `gh repo view --json isTemplate,url -q ...` (verification)
+- `git add README.md README.zh.md .ai/handoff.md`
+- `git commit -m "docs: add prompt-based adoption path; mark repo as GitHub template"`
+- `git push`
 
 ## Checks performed
 
-- File presence verified for every file listed above.
-- `CLAUDE.md` and `AGENTS.md` reviewed manually to confirm they list the
-  seven `.ai/` files in the same order.
-- `README.md` and `README.zh.md` cross-linked in their headers.
-- `git status` clean after the initial commit.
-- `gh repo view --web` (or the URL printed by `gh repo create`) confirms the
-  repo is public on GitHub.
+- `gh repo view --json isTemplate` returned `isTemplate=true`.
+- Both READMEs were re-read end to end after editing; Option A / 方式 A
+  wording and Option C / 方式 C bodies stay in sync between languages.
+- Read order in `CLAUDE.md` and `AGENTS.md` was not touched and remains
+  in sync.
+- `git status` clean after the new commit.
 
 ## Current state
 
-- Repository initialised, committed, and pushed to
-  `https://github.com/SUN-1024/memsync` as a public
-  repository on the `main` branch.
-- No CI, no tests, no build pipeline — by design (markdown-only scaffold).
+- Repository is **public** *and* marked as a **template repository** at
+  `https://github.com/SUN-1024/memsync`.
+- README documents three adoption paths:
+  - **A.** Click *Use this template* on GitHub.
+  - **B.** Clone and copy `.ai/`, `CLAUDE.md`, `AGENTS.md` into an existing
+    repo.
+  - **C.** Paste a self-contained prompt into a fresh Claude Code / Codex
+    session and let the agent generate the scaffold from the target repo.
 
 ## Unresolved unknowns
 
-- None at the scaffold level. Adopting projects will need to fill in their
-  own commands inside `.ai/definition-of-done.md` and adjust
-  `.ai/architecture.md` to match their stack.
+- The Option C prompt was authored to be tool-agnostic; it has not yet
+  been re-tested against a Codex session in this repository. Behaviour with
+  Codex is expected to match Claude Code because the prompt does not rely
+  on `@`-imports or any Claude-specific feature, but this assumption is
+  not yet validated.
 
 ## Next safe action
 
 For a downstream consumer:
 
-1. Copy `.ai/`, `CLAUDE.md`, and `AGENTS.md` into the target repository.
-2. Edit `.ai/project.md` and `.ai/architecture.md` to describe the target
-   project honestly.
-3. Replace the "Required commands" section of `.ai/definition-of-done.md`
-   with the project's real commands.
-4. Reset `.ai/handoff.md` to describe the adoption itself as the latest task.
+1. Pick one of the three adoption paths in `README.md` / `README.zh.md`.
+2. After applying it, edit `.ai/project.md` and `.ai/architecture.md` to
+   describe the target project honestly, and replace the *Required
+   commands* section of `.ai/definition-of-done.md`.
+3. Reset `.ai/handoff.md` so it describes the adoption itself as the
+   latest task.
 
 For this scaffold repository:
 
-- Optionally mark the GitHub repo as a **template repository** in its settings
-  so others can click "Use this template".
+- Optionally add a CHANGELOG once a second meaningful change lands; until
+  then, `handoff.md` plus `git log` are sufficient.
