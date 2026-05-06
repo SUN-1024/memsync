@@ -17,6 +17,30 @@ any single AI agent. The list of supported / compatible agents (Claude Code,
 Codex, Cursor, and any other tool that reads `CLAUDE.md` or `AGENTS.md`) is
 not the same as the list of project contributors.
 
+## Quick start
+
+```bash
+# 1. Install (pick one)
+brew tap SUN-1024/memsync && brew install memsync
+# or:
+curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh | bash
+# or:
+npm install -g memsync-cli
+
+# 2. Run inside your project
+cd /path/to/your/repo
+memsync init      # writes .ai/, CLAUDE.md, AGENTS.md (skips files that already exist)
+memsync check     # validates the scaffold is complete and non-empty
+
+# 3. Make it yours
+#    edit .ai/project.md and .ai/architecture.md to describe the real project
+#    replace the "Required commands" section in .ai/definition-of-done.md
+#    git add .ai CLAUDE.md AGENTS.md && git commit -m "chore: adopt memsync"
+```
+
+After step 3, every AI coding agent that respects `CLAUDE.md` or `AGENTS.md`
+reads the same files in the same order at session start.
+
 ## What it generates
 
 ```
@@ -47,7 +71,7 @@ language, framework, or harness.
 
 ## Install
 
-### Homebrew (recommended)
+### Homebrew (recommended on macOS)
 
 ```bash
 brew tap SUN-1024/memsync
@@ -56,6 +80,41 @@ brew install memsync
 
 The tap repository is `SUN-1024/homebrew-memsync`; the formula is mirrored
 inside this repo at `homebrew/memsync.rb` for reference.
+
+### Curl one-liner (macOS / Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh | bash
+```
+
+The script downloads the latest release tarball, installs `memsync` to
+`/usr/local/bin/memsync`, and places the templates under
+`/usr/local/share/memsync/templates`. It uses `sudo` only if the prefix is
+not writable. Override the install location or version with environment
+variables:
+
+```bash
+MEMSYNC_PREFIX="$HOME/.local" \
+MEMSYNC_VERSION=v1.0.0 \
+  bash <(curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh)
+```
+
+### npm (cross-platform)
+
+The npm package is published as `memsync-cli` (the `memsync` name was
+already taken on the npm registry); it still installs a `memsync` binary
+on your `$PATH`:
+
+```bash
+npm install -g memsync-cli
+# or:
+pnpm add -g memsync-cli
+# or:
+yarn global add memsync-cli
+```
+
+The package is a thin wrapper around the same Bash CLI, so a Bash 3.2+
+shell is still required.
 
 ### From source
 
