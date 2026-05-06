@@ -2,7 +2,7 @@ class Memsync < Formula
   desc "CLI that initializes shared AI project memory in any repository"
   homepage "https://github.com/SUN-1024/memsync"
   url "https://github.com/SUN-1024/memsync/archive/refs/tags/v1.0.0.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  sha256 "254429bc4b1e20d3123ecc1008a002f29c21c4d317cc136437a4cfcfe3d18baf"
   license "MIT"
   version "1.0.0"
 
