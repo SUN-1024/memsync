@@ -1,0 +1,49 @@
+{
+  "name": "memsync-cli",
+  "version": "1.0.0",
+  "description": "A small CLI that drops a shared, version-controlled AI project memory into any repository",
+  "license": "MIT",
+  "homepage": "https://github.com/SUN-1024/memsync",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUN-1024/memsync.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SUN-1024/memsync/issues"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "claude",
+    "claude-code",
+    "codex",
+    "cursor",
+    "cli",
+    "scaffold",
+    "memory",
+    "project-memory",
+    "agents-md",
+    "claude-md"
+  ],
+  "bin": {
+    "memsync": "bin/memsync"
+  },
+  "files": [
+    "bin/",
+    "templates/",
+    "LICENSE",
+    "README.md",
+    "README.zh.md"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "test": "bash tests/test_memsync.sh",
+    "memsync": "bash bin/memsync"
+  }
+}
