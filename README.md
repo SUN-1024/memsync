@@ -2,14 +2,22 @@
 
 > **Languages:** **English** · [简体中文](./README.zh.md)
 
-A drop-in markdown scaffold that gives **Claude Code** and **Codex** (and any
-agent that respects `AGENTS.md` / `CLAUDE.md`) a single, version-controlled
-shared memory for a project. Stop the two tools from drifting into separate
-mental models of the same repo.
+A small CLI that drops a shared, version-controlled **AI project memory** into
+any repository. Run `memsync init` and any AI coding agent that respects
+either the `CLAUDE.md` or `AGENTS.md` convention will read the same project
+facts, in the same order, every session.
 
-## What this is
+```bash
+memsync init      # scaffold .ai/, CLAUDE.md, AGENTS.md in the current repo
+memsync check     # validate the scaffold is complete and non-empty
+```
 
-Seven small markdown files in `.ai/` plus two thin root adapters:
+memsync is **tool-neutral**. It is not authored by, owned by, or specific to
+any single AI agent. The list of supported / compatible agents (Claude Code,
+Codex, Cursor, and any other tool that reads `CLAUDE.md` or `AGENTS.md`) is
+not the same as the list of project contributors.
+
+## What it generates
 
 ```
 .ai/
@@ -20,8 +28,8 @@ Seven small markdown files in `.ai/` plus two thin root adapters:
   review-checklist.md    # PR review rubric
   memory.md              # durable shared knowledge
   handoff.md             # rolling state of the latest task
-CLAUDE.md                # Claude Code adapter — @./path imports
-AGENTS.md                # Codex / generic adapter — explicit read list
+CLAUDE.md                # adapter for agents that resolve @./path imports
+AGENTS.md                # adapter for agents that read a numbered file list
 ```
 
 `CLAUDE.md` and `AGENTS.md` never duplicate content; they only point into
@@ -29,48 +37,97 @@ AGENTS.md                # Codex / generic adapter — explicit read list
 
 ## Why
 
-- **Claude Code** reads `CLAUDE.md` and resolves `@./path` imports natively.
-- **Codex** (and several other agents) read `AGENTS.md` as plain instructions.
-- Without a shared layout, the two tools drift: one knows about a decision
-  the other does not, and you spend cycles reconciling them by hand.
+Different AI coding agents read different instruction files at session start.
+Without a shared layout, two agents in the same repo drift: one knows about
+a decision the other does not, and a human spends time reconciling them.
 
-This repo encodes the smallest convention that lets both tools share one
-project memory without locking you into a particular language, framework,
-or harness.
+memsync encodes the smallest convention that gives every supported agent
+a single source of truth, without locking the project into a particular
+language, framework, or harness.
 
-## Quick start
+## Install
 
-### Option A — use as a GitHub template
-
-1. On the repo page, click **Use this template** → *Create a new repository*.
-2. Clone your copy.
-3. Edit `.ai/project.md` and `.ai/architecture.md` to describe your real
-   project.
-4. Replace the *Required commands* section of `.ai/definition-of-done.md`
-   with your project's real build / test / lint commands.
-5. Reset `.ai/handoff.md` so it describes the adoption itself as the latest
-   task.
-
-### Option B — copy into an existing repo
+### Homebrew (recommended)
 
 ```bash
-git clone https://github.com/SUN-1024/memsync scaffold
-cp -r scaffold/.ai ./
-cp scaffold/CLAUDE.md scaffold/AGENTS.md ./
-rm -rf scaffold
+brew tap SUN-1024/memsync
+brew install memsync
 ```
 
-Then edit the files as in Option A.
+The tap repository is `SUN-1024/homebrew-memsync`; the formula is mirrored
+inside this repo at `homebrew/memsync.rb` for reference.
 
-### Option C — paste a prompt at the start of a session
+### From source
+
+```bash
+git clone https://github.com/SUN-1024/memsync.git
+cd memsync
+ln -s "$PWD/bin/memsync" /usr/local/bin/memsync   # or any directory on $PATH
+```
+
+### Without installing
+
+```bash
+git clone https://github.com/SUN-1024/memsync.git
+./memsync/bin/memsync --help
+```
+
+## Usage
+
+```bash
+memsync init                    # initialize in the current directory
+memsync init --target ./my-app  # initialize in a different directory
+memsync init --force            # overwrite existing files (dangerous)
+memsync check                   # validate the current directory
+memsync check ./my-app          # validate another path
+memsync --version
+memsync --help
+```
+
+`memsync init` is **safe by default**: existing files are reported as
+*skipped*, never overwritten silently. Pass `--force` only when you know you
+want to replace the current scaffold.
+
+After running `init`, edit the generated `.ai/project.md` and
+`.ai/architecture.md` so they describe your real project, then commit
+everything.
+
+## How agents read the generated files
+
+```
+session starts
+  agent that reads CLAUDE.md  ─► resolves @./path imports ─► loads .ai/* in order
+  agent that reads AGENTS.md  ─► follows the numbered list ─► loads .ai/* in order
+
+agent does work
+  before reporting "done":
+    update .ai/handoff.md   (always)
+    update .ai/memory.md    (when a stable fact emerges)
+```
+
+The read order is fixed:
+`README.md → project.md → architecture.md → definition-of-done.md → review-checklist.md → memory.md → handoff.md`.
+
+## The only runtime rule
+
+After **any** implementation, debugging, refactor, review, documentation,
+setup, dependency, config, or test-related task, agents update
+`.ai/handoff.md` **before** declaring the task done. Stable knowledge
+discovered during the task is appended to `.ai/memory.md` (or the most
+relevant `.ai/` file) in the same change.
+
+`.ai/` files never contain `TODO` / `TBD` / placeholder text. If a fact is
+genuinely undefined for a project, the file says so in one clear sentence.
+
+## Without installing the CLI: paste-a-prompt path
 
 If you would rather have an agent read your repo and generate the scaffold
-from scratch (instead of cloning a static copy), paste the following prompt
-into a fresh Claude Code or Codex session in the target repository:
+from scratch (instead of using the CLI), paste the following prompt into a
+fresh session of any AI coding agent in the target repository:
 
 ```text
-Initialize this repository for shared-memory dual-agent development across
-Claude Code and Codex.
+Initialize this repository for shared AI project memory across any agent
+that reads CLAUDE.md or AGENTS.md.
 
 1. Inspect the repo first: READMEs, package manifests, source tree, configs,
    scripts, tests, CI, Docker / deploy files, docs, and any existing AI
@@ -114,41 +171,48 @@ Claude Code and Codex.
    unknowns, and checks run.
 ```
 
-The agent does the inspection and writing; you only review the result.
+## Supported AI coding agents
 
-## How agents read this repo
+memsync ships with two adapters because different agents read different
+instruction files at session start:
 
+- `CLAUDE.md` — used by agents that natively resolve `@./path` imports.
+- `AGENTS.md` — used by agents that read an explicit numbered file list.
+
+Listed agents are **compatible**, not contributors. memsync does not ship as
+a plugin to any of them, and they did not author this repository.
+
+## Development
+
+memsync is a single Bash script plus a `templates/` directory.
+
+```bash
+# run tests
+bash tests/test_memsync.sh
+
+# run the CLI directly from the repo without installing
+bash bin/memsync --help
+
+# memsync should pass its own check on this repository
+bash bin/memsync check .
 ```
-session starts
-  Claude Code  ─► CLAUDE.md  ─► @-imports resolve  ─► loads .ai/* in order
-  Codex / other ─► AGENTS.md ─► follows the numbered list ─► loads .ai/* in order
 
-agent does work
-  before reporting "done":
-    update .ai/handoff.md   (always)
-    update .ai/memory.md    (when a stable fact emerges)
-```
+### Releases
 
-The read order is fixed:
-`README.md → project.md → architecture.md → definition-of-done.md → review-checklist.md → memory.md → handoff.md`.
-
-## Update rule (the only rule that matters at runtime)
-
-After **any** implementation, debugging, refactor, review, documentation,
-setup, dependency, config, or test-related task, update `.ai/handoff.md`
-**before** declaring the task done. If you discovered something durable about
-the project, append it to `.ai/memory.md` (or the most relevant `.ai/` file)
-in the same change.
-
-Never write `TODO` / `TBD` / placeholder text into `.ai/`. If a fact is
-genuinely undefined, write one clear sentence saying so.
+1. Update `VERSION` in `bin/memsync` and the `version` / `url` lines in
+   `homebrew/memsync.rb`.
+2. Tag the commit: `git tag v1.0.0 && git push --tags`. The release workflow
+   in `.github/workflows/release.yml` creates a GitHub release from the tag
+   and prints the SHA256 of the source tarball.
+3. Copy the SHA256 into `homebrew/memsync.rb` and push the formula to
+   `SUN-1024/homebrew-memsync` so `brew install memsync` picks it up.
 
 ## What this is *not*
 
-- Not a runtime, library, CLI, or language-specific framework.
-- Not a hook system or `settings.json` generator (those belong to the
-  consuming project).
-- Not opinionated about which agent is "primary" — both adapters are equal.
+- Not a runtime, library, language-specific framework, or hook system.
+- Not a `settings.json` generator (those live in the consuming project).
+- Not opinionated about which AI agent is "primary" — every supported
+  adapter is equal.
 
 ## License
 

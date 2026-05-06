@@ -2,13 +2,20 @@
 
 > **语言:** [English](./README.md) · **简体中文**
 
-一份开箱即用的 Markdown 脚手架,为 **Claude Code** 和 **Codex**(以及任何遵循
-`AGENTS.md` / `CLAUDE.md` 约定的 agent)提供同一个、可纳入版本控制的共享项目
-内存。从此两边工具不会再各自维护一套对项目的理解。
+一个小型 CLI,把一份共享的、可纳入版本控制的 **AI 项目内存** 写入任何仓库。
+执行 `memsync init` 之后,任何遵循 `CLAUDE.md` 或 `AGENTS.md` 约定的 AI 编程
+agent 都会以同样的顺序读到同样的项目事实。
 
-## 这是什么
+```bash
+memsync init      # 在当前仓库生成 .ai/、CLAUDE.md、AGENTS.md
+memsync check     # 校验生成的脚手架是否完整、非空
+```
 
-`.ai/` 目录下的 7 个小型 Markdown 文件,加上根目录的两个轻量适配器:
+memsync 是 **工具中立** 的:它不属于任何一个 AI agent,也不是由任何一个 agent
+署名开发。被支持/兼容的 agent 列表(Claude Code、Codex、Cursor,以及任何读取
+`CLAUDE.md` 或 `AGENTS.md` 的工具)与项目的贡献者列表不是一回事。
+
+## 它生成什么
 
 ```
 .ai/
@@ -19,53 +26,101 @@
   review-checklist.md    # PR 评审清单
   memory.md              # 稳定的共享知识
   handoff.md             # 最近一次任务的滚动状态
-CLAUDE.md                # Claude Code 适配器 —— @./path 导入
-AGENTS.md                # Codex / 通用适配器 —— 显式阅读顺序
+CLAUDE.md                # 适配器:用于解析 @./path 导入的 agent
+AGENTS.md                # 适配器:用于读编号清单的 agent
 ```
 
-`CLAUDE.md` 与 `AGENTS.md` 不会复制 `.ai/` 内的任何内容,它们只做指向。每个
-agent 看到的是同一套文件、同样的顺序。
+`CLAUDE.md` 与 `AGENTS.md` 不复制 `.ai/` 中的任何内容,只做指向。每个 agent
+读到的是同一套文件、同样的顺序。
 
 ## 为什么需要它
 
-- **Claude Code** 原生支持读取 `CLAUDE.md` 并解析 `@./path` 形式的导入。
-- **Codex** 与若干其他 agent 把 `AGENTS.md` 当作纯指令文件来读。
-- 没有统一布局时,两边会逐渐偏离:一边记得的决定另一边没有,人工合并成本越来
-  越高。
+不同的 AI 编程 agent 在会话开始时会读取不同的指令文件。没有统一布局时,同一
+仓库里的两个 agent 会逐渐偏离:一边记住的决定另一边没有,人工合并的成本越来
+越高。
 
-本仓库提供的是让双方共享同一份项目内存所需的**最小约定**,不绑定具体语言、
-框架或 agent 运行时。
+memsync 提供让所有支持的 agent 共享同一份项目内存所需的 **最小约定**,不绑定
+具体语言、框架或 agent 运行时。
 
-## 快速上手
+## 安装
 
-### 方式 A —— 作为 GitHub 模板仓库使用
-
-1. 在仓库页点 **Use this template** → *Create a new repository*。
-2. 克隆你自己的副本。
-3. 修改 `.ai/project.md` 与 `.ai/architecture.md`,如实描述你的项目。
-4. 把 `.ai/definition-of-done.md` 中的 *Required commands* 一节,替换为你
-   项目真实的 build / test / lint 等命令。
-5. 重写 `.ai/handoff.md`,把"接入本脚手架"作为最近一次任务记录下来。
-
-### 方式 B —— 拷贝进已有仓库
+### Homebrew(推荐)
 
 ```bash
-git clone https://github.com/SUN-1024/memsync scaffold
-cp -r scaffold/.ai ./
-cp scaffold/CLAUDE.md scaffold/AGENTS.md ./
-rm -rf scaffold
+brew tap SUN-1024/memsync
+brew install memsync
 ```
 
-随后按方式 A 的步骤修改文件即可。
+tap 仓库为 `SUN-1024/homebrew-memsync`;本仓库内 `homebrew/memsync.rb` 保留
+了一份用于参考的 formula 副本。
 
-### 方式 C —— 项目开始时贴一段提示词
+### 从源码安装
 
-如果你希望让 agent **直接读你的仓库再现场生成** 这套脚手架(而不是从模板里
-拷一份再改),可以在目标仓库内,把下面这段提示词贴进 Claude Code 或 Codex
-的全新会话:
+```bash
+git clone https://github.com/SUN-1024/memsync.git
+cd memsync
+ln -s "$PWD/bin/memsync" /usr/local/bin/memsync   # 或任何 $PATH 上的目录
+```
+
+### 不安装,直接使用
+
+```bash
+git clone https://github.com/SUN-1024/memsync.git
+./memsync/bin/memsync --help
+```
+
+## 使用方式
+
+```bash
+memsync init                    # 在当前目录初始化
+memsync init --target ./my-app  # 在另一个目录初始化
+memsync init --force            # 覆盖已存在的文件(危险)
+memsync check                   # 校验当前目录
+memsync check ./my-app          # 校验另一个路径
+memsync --version
+memsync --help
+```
+
+`memsync init` **默认是安全的**:已存在的文件会被报告为 *skipped*,不会被
+静默覆盖。只有当你确实想替换现有脚手架时,才使用 `--force`。
+
+执行 `init` 之后,请编辑生成的 `.ai/project.md` 与 `.ai/architecture.md`,
+让它们如实描述你的项目,然后整体提交。
+
+## agent 是如何读这套文件的
+
+```
+会话开始
+  读取 CLAUDE.md 的 agent  ─► 解析 @./path 导入  ─► 按顺序加载 .ai/*
+  读取 AGENTS.md 的 agent  ─► 按编号清单读取    ─► 按顺序加载 .ai/*
+
+agent 开始工作
+  在报告"完成"之前:
+    更新 .ai/handoff.md   (每次都更新)
+    更新 .ai/memory.md    (出现稳定事实时)
+```
+
+阅读顺序固定为:
+`README.md → project.md → architecture.md → definition-of-done.md → review-checklist.md → memory.md → handoff.md`。
+
+## 唯一的运行时规则
+
+在**任何一次**实现、调试、重构、评审、文档、初始化、依赖、配置、测试相关任务
+之后,**先更新 `.ai/handoff.md`,再宣布任务完成**。如果在过程中发现关于本
+项目的稳定知识,请把它追加到 `.ai/memory.md`(或最相关的 `.ai/` 文件)中,
+作为同一次变更的一部分提交。
+
+不要在 `.ai/` 中写入 `TODO` / `TBD` 或占位文本。如果某个事实本仓库尚未定义,
+请用一句话明确说明"未定义"。
+
+## 不安装 CLI 时:贴提示词
+
+如果你希望让 agent **直接读你的仓库再现场生成** 这套脚手架(而不是使用 CLI),
+可以在目标仓库内,把下面这段提示词贴进任意 AI 编程 agent 的全新会话:
 
 ```text
-请将本仓库初始化为 Claude Code 与 Codex 共享内存的双 agent 开发结构。
+请将本仓库初始化为可被任意 AI 编程 agent 共用的项目内存结构,只要该 agent
+读取 CLAUDE.md 或 AGENTS.md。
 
 1. 先阅读仓库本身:README、依赖清单、源码目录、配置、脚本、测试、CI、
    Docker / 部署文件、文档,以及已有的 AI 指令文件。只写仓库支持的事实——
@@ -101,39 +156,47 @@ rm -rf scaffold
 5. 最后总结:已创建文件、推断出的关键事实、未知项、已做的检查。
 ```
 
-agent 负责现场扫描和写文件,你只需要审一遍结果。
+## 受支持的 AI 编程 agent
 
-## agent 是如何读这套文件的
+memsync 同时提供两份适配器,因为不同的 agent 在会话开始时会读取不同的指令
+文件:
 
+- `CLAUDE.md` —— 用于原生支持 `@./path` 导入的 agent。
+- `AGENTS.md` —— 用于按编号清单读取文件的 agent。
+
+列出的 agent 是 **兼容方**,不是项目贡献者。memsync 不是它们任何一个的插件,
+它们也不是本仓库的作者。
+
+## 开发
+
+memsync 是一个 Bash 脚本加一个 `templates/` 目录。
+
+```bash
+# 跑测试
+bash tests/test_memsync.sh
+
+# 不安装,直接从仓库运行 CLI
+bash bin/memsync --help
+
+# memsync 自身也应当通过它自己的 check
+bash bin/memsync check .
 ```
-会话开始
-  Claude Code   ─► CLAUDE.md  ─► 解析 @-imports ─► 按顺序加载 .ai/*
-  Codex / 其他  ─► AGENTS.md  ─► 按编号清单读取 ─► 按顺序加载 .ai/*
 
-agent 开始工作
-  在报告"完成"之前:
-    更新 .ai/handoff.md   (每次都更新)
-    更新 .ai/memory.md    (出现稳定事实时)
-```
+### 发布
 
-阅读顺序固定为:
-`README.md → project.md → architecture.md → definition-of-done.md → review-checklist.md → memory.md → handoff.md`。
-
-## 唯一的运行时规则
-
-在**任何一次**实现、调试、重构、评审、文档、初始化、依赖、配置、测试相关任务
-之后,**先更新 `.ai/handoff.md`,再宣布任务完成**。如果在过程中发现了关于本
-项目的稳定知识,请把它追加到 `.ai/memory.md`(或最相关的 `.ai/` 文件)中,
-作为同一次变更的一部分提交。
-
-不要在 `.ai/` 中写入 `TODO` / `TBD` 或占位文本。如果某个事实本仓库尚未定义,
-请用一句话明确说明"未定义"。
+1. 更新 `bin/memsync` 中的 `VERSION` 以及 `homebrew/memsync.rb` 中的
+   `version` / `url` 行。
+2. 给 commit 打 tag:`git tag v1.0.0 && git push --tags`。
+   `.github/workflows/release.yml` 中的发布 workflow 会基于该 tag 创建
+   GitHub release,并打印源码 tarball 的 SHA256。
+3. 把 SHA256 写回 `homebrew/memsync.rb`,并把 formula 推送到
+   `SUN-1024/homebrew-memsync`,这样 `brew install memsync` 才能取到。
 
 ## 这不是什么
 
-- 它不是运行时、库、CLI,也不是特定语言的框架。
-- 它不是 hook 系统或 `settings.json` 生成器(那些属于使用方项目)。
-- 它不偏袒任何一个 agent —— 两个适配器是平等的。
+- 它不是运行时、库、特定语言的框架,也不是 hook 系统。
+- 它不是 `settings.json` 生成器(那些属于使用方项目)。
+- 它不偏袒任何一个 AI agent —— 每一个被支持的适配器都是平等的。
 
 ## 许可证
 

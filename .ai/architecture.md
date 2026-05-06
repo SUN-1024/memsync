@@ -2,95 +2,146 @@
 
 ## Stack
 
-- **Markdown** (CommonMark / GitHub-flavored).
+- **Bash** (3.2+) for the CLI script.
+- **Markdown** (CommonMark / GitHub-flavored) for the scaffold and docs.
 - **Git** for versioning.
-- **GitHub** for hosting and (optional) template-repo distribution.
+- **GitHub** for hosting, releases, and Actions.
+- **Homebrew** as the primary distribution channel.
 
-There is no runtime, no build step, no test runner. The "stack" is a convention
-plus the agent harnesses that respect it.
+There is no compiler, no language runtime, no build step, and no test
+framework beyond plain Bash assertions.
 
 ## Repository layout
 
 ```
 memsync/
-├── .ai/
-│   ├── README.md              # Convention explainer + read order
-│   ├── project.md             # Purpose, stakeholders, scope, non-goals
-│   ├── architecture.md        # This file
-│   ├── definition-of-done.md  # What "done" means
-│   ├── review-checklist.md    # PR review rubric
-│   ├── memory.md              # Durable shared knowledge
-│   └── handoff.md             # Rolling state of latest task
-├── CLAUDE.md                  # Claude Code adapter (@-imports into .ai/)
-├── AGENTS.md                  # Codex / generic adapter (explicit read order)
-├── README.md                  # English entry-point for humans
-├── README.zh.md               # Simplified Chinese entry-point for humans
-├── LICENSE                    # MIT
-└── .gitignore                 # Editor / OS noise only
+├── .ai/                          # memsync's own project memory
+│   ├── README.md
+│   ├── project.md
+│   ├── architecture.md           # this file
+│   ├── definition-of-done.md
+│   ├── review-checklist.md
+│   ├── memory.md
+│   └── handoff.md
+├── .github/
+│   └── workflows/
+│       └── release.yml           # GitHub Actions release workflow
+├── bin/
+│   └── memsync                   # Bash CLI (chmod +x)
+├── templates/                    # source for `memsync init`
+│   ├── .ai/
+│   │   ├── README.md
+│   │   ├── project.md
+│   │   ├── architecture.md
+│   │   ├── definition-of-done.md
+│   │   ├── review-checklist.md
+│   │   ├── memory.md
+│   │   └── handoff.md
+│   ├── CLAUDE.md
+│   └── AGENTS.md
+├── tests/
+│   └── test_memsync.sh           # integration tests
+├── homebrew/
+│   └── memsync.rb                # Homebrew formula (reference copy)
+├── AGENTS.md                     # Codex-style adapter
+├── CLAUDE.md                     # Claude Code-style adapter
+├── README.md                     # English entry point
+├── README.zh.md                  # Simplified Chinese entry point
+├── LICENSE                       # MIT
+└── .gitignore
 ```
 
 ## Components
 
-### `.ai/` — shared project memory
+### `bin/memsync` — the CLI
 
-The seven files in `.ai/` are read by every agent at session start. They are
-the single source of truth; nothing in the root files duplicates their content.
+A single Bash script. Subcommands:
 
-### `CLAUDE.md` — Claude Code adapter
+- `init [--force] [--target DIR]` — copies every file in `templates/` into
+  the target directory. Skips existing files unless `--force` is given.
+- `check [PATH]` — verifies that the target directory contains all nine
+  scaffold files and that none are empty.
+- `--help` / `--version` — usage and version output.
 
-Pure `@./path` imports, in the read order defined by `.ai/README.md`. Claude
-Code resolves these imports natively and inlines the content into the system
-prompt.
+The script discovers its template directory by resolving `BASH_SOURCE[0]`
+(following symlinks) and looking at `../templates`. The Homebrew formula
+patches that path at install time so it points at
+`#{share}/memsync/templates`.
 
-### `AGENTS.md` — Codex / generic adapter
+### `templates/` — the scaffold source
 
-A short instruction file that names each `.ai/` file in the read order and
-states the post-task update rule (update `handoff.md` before declaring done;
-update `memory.md` when a stable fact emerges). It does not rely on `@`-import
-syntax because agents other than Claude Code may not support it.
+Contains the seven generic `.ai/` markdown files plus the two root adapters
+(`CLAUDE.md`, `AGENTS.md`). These files are what `memsync init` writes into a
+target repo. They use tool-neutral language and never contain `TODO`/`TBD`.
 
-### `README.md` / `README.zh.md` — human entry points
+### `.ai/` — memsync's own project memory
 
-For the human reader (browsing the repo on GitHub or locally). The Chinese
-version mirrors the English one and links back to it; both files include a
-language switcher at the top.
+Same seven files, but populated with facts about memsync itself. The repo
+follows the convention it ships, so `memsync check .` passes inside the repo.
+
+### `homebrew/memsync.rb` — distribution formula
+
+A reference copy of the Homebrew formula. The canonical version lives in the
+`SUN-1024/homebrew-memsync` tap repository; this copy exists so reviewers can
+see the formula in the same diff as the changes to `bin/memsync`.
+
+### `tests/test_memsync.sh` — integration tests
+
+Bash assertions exercising every subcommand: `--version`, `--help`, `init`
+into a temp dir, `init` again for idempotency, `check` on a populated dir,
+`check` on an empty dir.
+
+### `.github/workflows/release.yml` — release automation
+
+Triggered by pushing a `v*.*.*` tag. Creates a GitHub release from the tag
+and prints the SHA256 of the source tarball so the maintainer can update the
+Homebrew formula.
 
 ## Data flow
 
 ```
-session starts
-   │
-   ├── Claude Code  ─► reads CLAUDE.md  ─► resolves @-imports ─► loads .ai/*
-   │
-   └── Codex / other ─► reads AGENTS.md ─► follows read-order list ─► loads .ai/*
-                                                                          │
-                              agent does work in the repo  ◄───────────────┘
-                                       │
-                              before declaring done:
-                                  update .ai/handoff.md
-                                  update .ai/memory.md if stable knowledge emerged
+maintainer:                                      end user:
+  edit code/templates                              brew install memsync
+  → run `bash tests/test_memsync.sh`               → memsync init in their repo
+  → tag v1.X.Y                                       → templates/ copied into .ai/
+  → GitHub Action publishes release                  → CLAUDE.md + AGENTS.md
+  → update homebrew tap with new SHA256              → AI agent at session start
+  → user `brew upgrade memsync`                        reads .ai/* in fixed order
+                                                     → updates handoff.md before
+                                                       reporting "done"
 ```
 
 ## Dependencies
 
-None at runtime. The repository is plain markdown, intended to be consumed by
-agent harnesses (Claude Code, Codex, etc.) rather than executed.
+None at runtime, beyond Bash 3.2+ and POSIX utilities (`cp`, `mkdir`,
+`readlink`, `find`). No language runtime, no package manager, no compiled
+artifacts.
 
 ## Entry points
 
-- For agents: `CLAUDE.md` (Claude Code) or `AGENTS.md` (Codex / generic).
-- For humans: `README.md` (English) or `README.zh.md` (中文).
+- For end users: the `memsync` command after install, or `bash bin/memsync`
+  from a clone.
+- For agents working on this repo: `CLAUDE.md` (Claude Code) or `AGENTS.md`
+  (Codex / generic).
+- For human readers: `README.md` (English) or `README.zh.md` (中文).
 
 ## Visible design decisions
 
-1. **Two adapter files, not a symlink.** `AGENTS.md` is a real file because
-   Claude Code's `@`-import syntax and Codex's reading conventions are not
-   identical, and symlinks behave inconsistently across OSes and shallow clones.
-2. **`.ai/` as the only source of truth.** Adapters never duplicate content;
-   they only point to it. This guarantees the two tools see the same text.
-3. **`handoff.md` is rolling, `memory.md` is stable.** Splitting state from
-   knowledge keeps the long-lived file from filling up with task chatter.
-4. **English inside `.ai/`.** Any agent should be able to read it. The Chinese
-   README is for humans only and is not part of the agent context.
-5. **No tooling lock-in.** No required CLI, lint config, or generator. Anyone
+1. **Bash, not Python or Go.** Keeps the install path trivial (no runtime
+   dependency), survives on every Mac and Linux without setup, and matches
+   the size of the problem.
+2. **`.ai/` is meta, `templates/` is the scaffold.** memsync's own `.ai/`
+   describes memsync itself; the generic scaffold lives in `templates/` and
+   is what users actually receive.
+3. **Skip-by-default `init`.** Existing files are reported as *skipped*, not
+   silently overwritten. `--force` is opt-in and documented.
+4. **Homebrew via inreplace, not env vars.** The formula rewrites the
+   `TEMPLATE_DIR` line at install time; the script remains a plain file
+   without runtime configuration.
+5. **Two real adapter files, not a symlink.** Different agents read
+   different files; symlinks behave inconsistently across OSes and shallow
+   clones.
+6. **English inside `.ai/`.** Any agent should be able to read it. The
+   Chinese README is for humans and is not part of the agent context.
+7. **No tooling lock-in.** No required CLI lint config or generator. Anyone
    can read or edit the repo with a plain text editor.

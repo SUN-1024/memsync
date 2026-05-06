@@ -1,9 +1,9 @@
 # `.ai/` — Shared Project Memory
 
-This directory is the **single source of truth** that both Claude Code and Codex
-(and any other agent that respects `AGENTS.md` / `CLAUDE.md`) read at the start
-of a session. The goal is simple: stop the two tools from drifting into separate
-mental models of the same repository.
+This directory is the **single source of truth** that AI coding agents read at
+the start of a session. Any agent that respects `AGENTS.md` or `CLAUDE.md`
+loads these files in a fixed order. The goal is simple: stop different agents
+from drifting into separate mental models of the same repository.
 
 ## Read order
 
@@ -35,7 +35,8 @@ directory; do not duplicate content into them.
 
 ## Why this exists
 
-Claude Code natively imports files via `@./path` syntax in `CLAUDE.md`. Codex
-and several other agents look for `AGENTS.md` and read it as plain instructions.
-By putting the actual content in `.ai/` and keeping the root files thin, both
-tools end up reading the same authoritative documents in the same order.
+Different AI coding agents read different instruction files at session start:
+some natively resolve `@./path` imports inside `CLAUDE.md`; others read
+`AGENTS.md` as a plain numbered list. By putting the actual content in `.ai/`
+and keeping both root adapters thin, every supported agent ends up reading the
+same authoritative documents in the same order.

@@ -2,65 +2,81 @@
 
 ## Purpose
 
-`memsync` is a **bootstrap scaffold** — a small set of
-markdown files that any new (or existing) repository can drop in to give Claude
-Code and Codex a shared, version-controlled project memory.
+`memsync` is a small CLI tool plus a markdown scaffold. Running `memsync init`
+in a repository drops a `.ai/` directory and two thin root adapter files
+(`CLAUDE.md`, `AGENTS.md`) so any AI coding agent that respects either
+convention reads the same project facts in the same order at session start.
 
 It exists because:
 
-- Claude Code reads `CLAUDE.md` and supports `@path` imports.
-- Codex and several other agents read `AGENTS.md` as plain instructions.
-- Without a shared layout, the two tools drift: one knows about a decision the
-  other does not, and the human has to reconcile them.
+- Different AI agents read different instruction files
+  (`CLAUDE.md` resolves `@./path` imports; `AGENTS.md` is read as a plain
+  numbered list).
+- Without a shared layout, two agents in the same repo drift: one knows about
+  a decision the other does not, and a human has to reconcile them.
 
-This repo is the convention itself. Cloning or copying it into a project gives
-you the structure; filling in the files makes it yours.
+The repository is both the tool and a living example of the scaffold it
+generates: memsync's own `.ai/` directory follows the convention it ships.
 
 ## Users / stakeholders
 
-- **Engineers running both Claude Code and Codex** on the same repo — the
+- **Engineers running multiple AI coding agents on the same repo** — the
   primary audience.
 - **Engineers running any single agent** that respects `AGENTS.md` or
-  `CLAUDE.md` — still benefits from the structure, even if only one adapter is
-  used.
+  `CLAUDE.md` — still benefits from the structure.
 - **Reviewers** of agent-authored PRs — `review-checklist.md` and
   `definition-of-done.md` give them a stable rubric.
+- **Maintainers of memsync** — install via Homebrew or run from a clone.
 
 ## Scope
 
-- Documentation and convention files only (`.ai/`, `CLAUDE.md`, `AGENTS.md`,
-  `README*.md`, `LICENSE`, `.gitignore`).
-- Read-order rules and update rules for agents.
-- Bilingual entry-point README (English + Simplified Chinese).
+- The `bin/memsync` Bash CLI (`init`, `check`, `--help`, `--version`).
+- The `templates/` directory: source of truth for what `memsync init` writes.
+- The repository's own `.ai/` directory: meta-documentation about memsync.
+- Bilingual entry-point READMEs (English + Simplified Chinese).
+- A Homebrew formula at `homebrew/memsync.rb` for distribution via a tap.
+- An integration test suite at `tests/test_memsync.sh`.
+- A GitHub Actions release workflow that creates a GitHub release on tag push.
 
 ## Non-goals
 
-- Not a runtime, library, CLI, or language-specific framework.
-- Not a hook system or settings file generator (Claude Code's `settings.json`
-  hooks live elsewhere; this template does not configure them).
-- Not opinionated about which agent is "primary" — both adapters are equal.
+- Not a runtime, library, or language-specific framework.
+- Not a hook system or settings file generator (Claude Code's
+  `settings.json`, Cursor's rules, etc. live elsewhere).
+- Not opinionated about which AI coding agent is "primary" — both adapters
+  are equal.
 - Not a replacement for repo-specific docs like `CONTRIBUTING.md` or ADRs;
-  it is the *agent-facing* layer that complements them.
+  memsync is the *agent-facing* layer that complements them.
+- Not a Python / Node / Go application — keeping it as a single Bash script
+  is intentional.
 
 ## Constraints
 
-- Markdown only. No executable code, no build pipeline.
-- Tool-agnostic wording inside `.ai/` so any agent can read it.
-- `CLAUDE.md` uses Claude's `@./path` import syntax; `AGENTS.md` uses an
-  explicit ordered list because not every agent supports `@`-imports.
+- Bash-compatible (works under macOS `/bin/bash` and Linux `/usr/bin/env bash`).
+- Markdown only inside `.ai/` so any agent can read it.
+- Tool-agnostic wording inside `.ai/`.
 - Cross-platform: avoid symlinks; keep `CLAUDE.md` and `AGENTS.md` as real
   files so Windows and shallow clones work.
+- The CLI is **safe by default**: `init` never overwrites without `--force`.
 
 ## Runtime assumptions
 
-None. Files are static markdown read by the agent harness.
+- The user has Bash 3.2+ available (the version that ships with macOS).
+- The user has `cp`, `mkdir`, `find`, `readlink` — i.e. POSIX utilities.
+
+No build step, no compiler, no language runtime is required.
 
 ## Deploy targets
 
-Not applicable — this repository is published as a GitHub template/source. There
-is no service to deploy.
+- **Homebrew**: `brew tap SUN-1024/memsync && brew install memsync`. The tap
+  repository (`SUN-1024/homebrew-memsync`) hosts the canonical formula; the
+  copy at `homebrew/memsync.rb` in this repo is for reference and review.
+- **Manual install from source**: `git clone` + symlink `bin/memsync` onto
+  `$PATH`.
+- **GitHub releases**: source tarballs published per tag via the release
+  workflow, used by Homebrew as the install artifact.
 
 ## External services
 
-- GitHub (hosting, releases).
-- Optional: any agent harness that reads `CLAUDE.md` or `AGENTS.md`.
+- GitHub (hosting, releases, Actions).
+- Homebrew (distribution).
