@@ -26,7 +26,8 @@ generates: memsync's own `.ai/` directory follows the convention it ships.
   `CLAUDE.md` — still benefits from the structure.
 - **Reviewers** of agent-authored PRs — `review-checklist.md` and
   `definition-of-done.md` give them a stable rubric.
-- **Maintainers of memsync** — install via Homebrew or run from a clone.
+- **Maintainers of memsync** — install via Homebrew, the curl one-liner,
+  npm, or directly from a clone.
 
 ## Scope
 
@@ -35,6 +36,8 @@ generates: memsync's own `.ai/` directory follows the convention it ships.
 - The repository's own `.ai/` directory: meta-documentation about memsync.
 - Bilingual entry-point READMEs (English + Simplified Chinese).
 - A Homebrew formula at `homebrew/memsync.rb` for distribution via a tap.
+- A curl-pipe-bash installer at `install.sh`.
+- An npm wrapper (`package.json`, published as `memsync-cli`).
 - An integration test suite at `tests/test_memsync.sh`.
 - A GitHub Actions release workflow that creates a GitHub release on tag push.
 
@@ -48,7 +51,8 @@ generates: memsync's own `.ai/` directory follows the convention it ships.
 - Not a replacement for repo-specific docs like `CONTRIBUTING.md` or ADRs;
   memsync is the *agent-facing* layer that complements them.
 - Not a Python / Node / Go application — keeping it as a single Bash script
-  is intentional.
+  is intentional. The npm package is a thin distribution wrapper around the
+  same Bash binary, not a Node implementation.
 
 ## Constraints
 
@@ -71,12 +75,19 @@ No build step, no compiler, no language runtime is required.
 - **Homebrew**: `brew tap SUN-1024/memsync && brew install memsync`. The tap
   repository (`SUN-1024/homebrew-memsync`) hosts the canonical formula; the
   copy at `homebrew/memsync.rb` in this repo is for reference and review.
+- **Curl one-liner**: `curl -fsSL .../install.sh | bash`. Resolves the
+  latest release tag (or `MEMSYNC_VERSION`), unpacks the source tarball,
+  and installs into `$MEMSYNC_PREFIX/bin` and `$MEMSYNC_PREFIX/share`.
+- **npm**: `npm install -g memsync-cli` (the package name is `memsync-cli`
+  because `memsync` is taken on the npm registry; the binary is still
+  `memsync`).
 - **Manual install from source**: `git clone` + symlink `bin/memsync` onto
   `$PATH`.
 - **GitHub releases**: source tarballs published per tag via the release
-  workflow, used by Homebrew as the install artifact.
+  workflow, used by Homebrew and `install.sh` as the install artifact.
 
 ## External services
 
 - GitHub (hosting, releases, Actions).
 - Homebrew (distribution).
+- npm registry (distribution as `memsync-cli`).

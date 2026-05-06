@@ -33,8 +33,8 @@ task. Remove entries that go stale.
   (following symlinks). The Homebrew formula rewrites the resolved path at
   install time; do not rely on environment variables for template lookup.
 - Version is hard-coded at the top of `bin/memsync` as `VERSION="X.Y.Z"`.
-  Bumping the version means editing both `bin/memsync` and
-  `homebrew/memsync.rb` in the same commit.
+  Bumping the version means editing `bin/memsync`, `homebrew/memsync.rb`,
+  and `package.json` together (see *Distribution* below for details).
 
 ## Update protocol
 
@@ -50,6 +50,19 @@ task. Remove entries that go stale.
   canonical version lives in the tap.
 - Releases are triggered by pushing a `v*.*.*` tag. The action attaches the
   source tarball and prints its SHA256 so the formula can be updated.
+- The npm package name is **`memsync-cli`**, not `memsync`. The bare name
+  was already taken on the npm registry by an unrelated project, so the
+  `bin` field maps the binary back to `memsync`. When publishing, update
+  the `version` field in `package.json` in lockstep with `bin/memsync` and
+  `homebrew/memsync.rb`.
+- The curl installer is `install.sh` at the repo root. It is served via
+  `https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh`,
+  so any change must keep `set -euo pipefail` semantics safe and must keep
+  honoring `MEMSYNC_VERSION` and `MEMSYNC_PREFIX`.
+- Bumping a version is a four-file change: `bin/memsync` (`VERSION=`),
+  `homebrew/memsync.rb` (`version`, `url`, `sha256`), `package.json`
+  (`version`), and a new git tag. `install.sh` reads the latest tag at
+  runtime, so it does not need an edit.
 
 ## Branding
 
