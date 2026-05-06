@@ -1,0 +1,67 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "stripped=${tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Run integration tests
+        run: bash tests/test_memsync.sh
+
+      - name: Verify CLI version matches tag
+        run: |
+          script_version="$(bash bin/memsync --version | awk '{print $2}')"
+          if [ "$script_version" != "${{ steps.version.outputs.stripped }}" ]; then
+            echo "VERSION mismatch: bin/memsync says $script_version, tag is ${{ steps.version.outputs.stripped }}" >&2
+            exit 1
+          fi
+
+      - name: Download source tarball
+        run: |
+          curl -fsSL \
+            "https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${{ steps.version.outputs.tag }}.tar.gz" \
+            -o "memsync-${{ steps.version.outputs.stripped }}.tar.gz"
+
+      - name: Compute SHA256
+        id: sha
+        run: |
+          sum="$(shasum -a 256 "memsync-${{ steps.version.outputs.stripped }}.tar.gz" | awk '{print $1}')"
+          echo "sha256=${sum}" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Tarball SHA256::${sum}"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: |
+            memsync ${{ steps.version.outputs.tag }}
+
+            Source tarball SHA256:
+            ```
+            ${{ steps.sha.outputs.sha256 }}
+            ```
+
+            Update `homebrew/memsync.rb` (and the canonical formula in
+            `SUN-1024/homebrew-memsync`) with the new `url` and `sha256`,
+            then `brew upgrade memsync`.
+          files: |
+            memsync-${{ steps.version.outputs.stripped }}.tar.gz
