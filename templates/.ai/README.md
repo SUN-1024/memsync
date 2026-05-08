@@ -15,6 +15,8 @@ Agents should load these files in this exact order, every session:
 5. `review-checklist.md` — the punch list reviewers run through.
 6. `memory.md` — durable, slow-changing project knowledge.
 7. `handoff.md` — rolling state of the most recent task.
+8. `goal-driven-prompt.md` — paste-able prompt for a goal-driven
+   multi-agent workflow with master / manager / worker agents.
 
 The two root adapters (`CLAUDE.md` and `AGENTS.md`) both point into this
 directory; do not duplicate content into them.

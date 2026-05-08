@@ -9,6 +9,7 @@ Read these files in order before doing any work in this repository:
 5. `.ai/review-checklist.md`
 6. `.ai/memory.md`
 7. `.ai/handoff.md`
+8. `.ai/goal-driven-prompt.md`
 
 These files are the shared source of truth for every AI coding agent that
 respects this convention. Do not duplicate their content into this file or
