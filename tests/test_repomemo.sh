@@ -8,7 +8,7 @@ set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MEMSYNC="$ROOT/bin/repomemo"
-EXPECTED_VERSION="1.0.0"
+EXPECTED_VERSION="1.0.1"
 
 PASS=0
 FAIL=0

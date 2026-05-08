@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 # Resolve the script's own directory, following symlinks (e.g. from Homebrew).
 resolve_script_dir() {

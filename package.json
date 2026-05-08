@@ -1,6 +1,6 @@
 {
   "name": "repomemo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A small CLI that drops a shared, version-controlled AI project memory into any repository",
   "license": "MIT",
   "homepage": "https://github.com/SUN-1024/repomemo",
