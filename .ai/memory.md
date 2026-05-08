@@ -8,9 +8,9 @@ task. Remove entries that go stale.
 
 - The repository is both the CLI tool *and* the convention it ships:
   the same `.ai/` files an adopting project would receive live at the root,
-  populated with facts about memsync itself.
+  populated with facts about repomemo itself.
 - The CLI is a single Bash script. There is no compiler or build step;
-  changing behavior means editing `bin/memsync` directly.
+  changing behavior means editing `bin/repomemo` directly.
 
 ## Adapter conventions
 
@@ -21,19 +21,19 @@ task. Remove entries that go stale.
   read `AGENTS.md` typically do not resolve `@`-imports, so the list is
   explicit.
 - `CLAUDE.md` and `AGENTS.md` exist in **two places**: at the repo root
-  (memsync's own adapters) and under `templates/` (what `memsync init` writes
+  (repomemo's own adapters) and under `templates/` (what `repomemo init` writes
   for users). Both sets must always be in sync with each other and with
-  `bin/memsync`'s `SCAFFOLD_FILES` array.
+  `bin/repomemo`'s `SCAFFOLD_FILES` array.
 
 ## CLI conventions
 
-- `bin/memsync init` is **safe by default** — it skips existing files. Only
+- `bin/repomemo init` is **safe by default** — it skips existing files. Only
   `--force` overwrites. Never change this default without a release note.
-- `bin/memsync` resolves its template directory relative to its own location
+- `bin/repomemo` resolves its template directory relative to its own location
   (following symlinks). The Homebrew formula rewrites the resolved path at
   install time; do not rely on environment variables for template lookup.
-- Version is hard-coded at the top of `bin/memsync` as `VERSION="X.Y.Z"`.
-  Bumping the version means editing `bin/memsync`, `homebrew/memsync.rb`,
+- Version is hard-coded at the top of `bin/repomemo` as `VERSION="X.Y.Z"`.
+  Bumping the version means editing `bin/repomemo`, `homebrew/repomemo.rb`,
   and `package.json` together (see *Distribution* below for details).
 
 ## Update protocol
@@ -45,28 +45,26 @@ task. Remove entries that go stale.
 
 ## Distribution
 
-- The Homebrew tap repository is `SUN-1024/homebrew-memsync`.
-- The formula at `homebrew/memsync.rb` in this repo is a reference copy; the
+- The Homebrew tap repository is `SUN-1024/homebrew-repomemo`.
+- The formula at `homebrew/repomemo.rb` in this repo is a reference copy; the
   canonical version lives in the tap.
 - Releases are triggered by pushing a `v*.*.*` tag. The action attaches the
   source tarball and prints its SHA256 so the formula can be updated.
-- The npm package name is **`memsync-cli`**, not `memsync`. The bare name
-  was already taken on the npm registry by an unrelated project, so the
-  `bin` field maps the binary back to `memsync`. When publishing, update
-  the `version` field in `package.json` in lockstep with `bin/memsync` and
-  `homebrew/memsync.rb`.
+- The npm package name is **`repomemo`**. When publishing, update the
+  `version` field in `package.json` in lockstep with `bin/repomemo` and
+  `homebrew/repomemo.rb`.
 - The curl installer is `install.sh` at the repo root. It is served via
-  `https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh`,
+  `https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh`,
   so any change must keep `set -euo pipefail` semantics safe and must keep
-  honoring `MEMSYNC_VERSION` and `MEMSYNC_PREFIX`.
-- Bumping a version is a four-file change: `bin/memsync` (`VERSION=`),
-  `homebrew/memsync.rb` (`version`, `url`, `sha256`), `package.json`
+  honoring `REPOMEMO_VERSION` and `REPOMEMO_PREFIX`.
+- Bumping a version is a four-file change: `bin/repomemo` (`VERSION=`),
+  `homebrew/repomemo.rb` (`version`, `url`, `sha256`), `package.json`
   (`version`), and a new git tag. `install.sh` reads the latest tag at
   runtime, so it does not need an edit.
 
 ## Branding
 
-- memsync is **tool-neutral**. No single AI coding agent (Claude Code,
+- repomemo is **tool-neutral**. No single AI coding agent (Claude Code,
   Codex, Cursor, etc.) is named as a contributor, author, maintainer, or
   project identity. Listed agents are compatibility targets only.
 - When adding new agent names, list them as compatibility references, not

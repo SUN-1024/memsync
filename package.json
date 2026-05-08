@@ -1,15 +1,15 @@
 {
-  "name": "memsync-cli",
+  "name": "repomemo",
   "version": "1.0.0",
   "description": "A small CLI that drops a shared, version-controlled AI project memory into any repository",
   "license": "MIT",
-  "homepage": "https://github.com/SUN-1024/memsync",
+  "homepage": "https://github.com/SUN-1024/repomemo",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SUN-1024/memsync.git"
+    "url": "git+https://github.com/SUN-1024/repomemo.git"
   },
   "bugs": {
-    "url": "https://github.com/SUN-1024/memsync/issues"
+    "url": "https://github.com/SUN-1024/repomemo/issues"
   },
   "keywords": [
     "ai",
@@ -26,7 +26,7 @@
     "claude-md"
   ],
   "bin": {
-    "memsync": "bin/memsync"
+    "repomemo": "bin/repomemo"
   },
   "files": [
     "bin/",
@@ -43,7 +43,7 @@
     "node": ">=14"
   },
   "scripts": {
-    "test": "bash tests/test_memsync.sh",
-    "memsync": "bash bin/memsync"
+    "test": "bash tests/test_repomemo.sh",
+    "repomemo": "bash bin/repomemo"
   }
 }

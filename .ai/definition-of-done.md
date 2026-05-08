@@ -1,6 +1,6 @@
 # Definition of Done
 
-memsync is a Bash script plus a markdown scaffold. "Done" is therefore
+repomemo is a Bash script plus a markdown scaffold. "Done" is therefore
 defined in terms of script correctness, scaffold completeness, and
 documentation consistency.
 
@@ -9,9 +9,9 @@ documentation consistency.
 Run from the repository root. All commands must succeed before a change is
 considered done.
 
-- **Smoke test the CLI**: `bash bin/memsync --version` and `bash bin/memsync --help`.
-- **Run the integration test suite**: `bash tests/test_memsync.sh`.
-- **Self-check**: `bash bin/memsync check .` (memsync's own `.ai/` must pass).
+- **Smoke test the CLI**: `bash bin/repomemo --version` and `bash bin/repomemo --help`.
+- **Run the integration test suite**: `bash tests/test_repomemo.sh`.
+- **Self-check**: `bash bin/repomemo check .` (repomemo's own `.ai/` must pass).
 
 There is no compiler, linter, formatter, or typechecker configured for this
 repository. Any change to that decision should be documented here in the
@@ -32,9 +32,9 @@ same commit.
      change.
 5. **`templates/` files match `.ai/` semantics.** When the scaffold gains or
    loses a file, both `templates/` and the file lists in
-   `bin/memsync` (`SCAFFOLD_FILES`), `CLAUDE.md`, and `AGENTS.md` are
+   `bin/repomemo` (`SCAFFOLD_FILES`), `CLAUDE.md`, and `AGENTS.md` are
    updated together.
-6. **`bin/memsync` is executable** (`chmod +x`) and committed with mode
+6. **`bin/repomemo` is executable** (`chmod +x`) and committed with mode
    `100755`.
 7. **`.ai/handoff.md` reflects the change just made** before the task is
    reported as done.
@@ -52,16 +52,16 @@ same commit.
 - Diffs touching `.ai/architecture.md` or `.ai/project.md` are
   cross-checked against the actual repo state — these files describe the
   repository and must not lie.
-- Diffs touching `bin/memsync` are reviewed alongside `tests/test_memsync.sh`
+- Diffs touching `bin/repomemo` are reviewed alongside `tests/test_repomemo.sh`
   — new behavior gets a test.
 - Diffs touching `CLAUDE.md`, `AGENTS.md`, `templates/CLAUDE.md`, or
   `templates/AGENTS.md` land **together** when the read order or file list
   changes.
-- Diffs touching `homebrew/memsync.rb` reference a real release tag and
+- Diffs touching `homebrew/repomemo.rb` reference a real release tag and
   SHA256 once the tag exists; placeholder SHA256 values are flagged.
 
 ## Verification
 
-- `bash tests/test_memsync.sh` exits 0.
-- `bash bin/memsync check .` exits 0.
+- `bash tests/test_repomemo.sh` exits 0.
+- `bash bin/repomemo check .` exits 0.
 - `git status` is clean before opening the PR.

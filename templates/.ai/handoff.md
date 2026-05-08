@@ -5,7 +5,7 @@ sections with the latest state; this file is not a changelog.
 
 ## Latest task
 
-Initialized this repository with the `memsync` scaffold. Replace this section
+Initialized this repository with the `repomemo` scaffold. Replace this section
 with a one-paragraph description of the most recent piece of work after the
 next real task.
 

@@ -1,18 +1,18 @@
-# memsync
+# RepoMemo
 
 > **Languages:** **English** · [简体中文](./README.zh.md)
 
 A small CLI that drops a shared, version-controlled **AI project memory** into
-any repository. Run `memsync init` and any AI coding agent that respects
+any repository. Run `repomemo init` and any AI coding agent that respects
 either the `CLAUDE.md` or `AGENTS.md` convention will read the same project
 facts, in the same order, every session.
 
 ```bash
-memsync init      # scaffold .ai/, CLAUDE.md, AGENTS.md in the current repo
-memsync check     # validate the scaffold is complete and non-empty
+repomemo init      # scaffold .ai/, CLAUDE.md, AGENTS.md in the current repo
+repomemo check     # validate the scaffold is complete and non-empty
 ```
 
-memsync is **tool-neutral**. It is not authored by, owned by, or specific to
+repomemo is **tool-neutral**. It is not authored by, owned by, or specific to
 any single AI agent. The list of supported / compatible agents (Claude Code,
 Codex, Cursor, and any other tool that reads `CLAUDE.md` or `AGENTS.md`) is
 not the same as the list of project contributors.
@@ -21,21 +21,21 @@ not the same as the list of project contributors.
 
 ```bash
 # 1. Install (pick one)
-brew tap SUN-1024/memsync && brew install memsync
+brew tap SUN-1024/repomemo && brew install repomemo
 # or:
-curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh | bash
 # or:
-npm install -g memsync-cli
+npm install -g repomemo
 
 # 2. Run inside your project
 cd /path/to/your/repo
-memsync init      # writes .ai/, CLAUDE.md, AGENTS.md (skips files that already exist)
-memsync check     # validates the scaffold is complete and non-empty
+repomemo init      # writes .ai/, CLAUDE.md, AGENTS.md (skips files that already exist)
+repomemo check     # validates the scaffold is complete and non-empty
 
 # 3. Make it yours
 #    edit .ai/project.md and .ai/architecture.md to describe the real project
 #    replace the "Required commands" section in .ai/definition-of-done.md
-#    git add .ai CLAUDE.md AGENTS.md && git commit -m "chore: adopt memsync"
+#    git add .ai CLAUDE.md AGENTS.md && git commit -m "chore: adopt repomemo"
 ```
 
 After step 3, every AI coding agent that respects `CLAUDE.md` or `AGENTS.md`
@@ -65,7 +65,7 @@ Different AI coding agents read different instruction files at session start.
 Without a shared layout, two agents in the same repo drift: one knows about
 a decision the other does not, and a human spends time reconciling them.
 
-memsync encodes the smallest convention that gives every supported agent
+repomemo encodes the smallest convention that gives every supported agent
 a single source of truth, without locking the project into a particular
 language, framework, or harness.
 
@@ -74,43 +74,41 @@ language, framework, or harness.
 ### Homebrew (recommended on macOS)
 
 ```bash
-brew tap SUN-1024/memsync
-brew install memsync
+brew tap SUN-1024/repomemo
+brew install repomemo
 ```
 
-The tap repository is `SUN-1024/homebrew-memsync`; the formula is mirrored
-inside this repo at `homebrew/memsync.rb` for reference.
+The tap repository is `SUN-1024/homebrew-repomemo`; the formula is mirrored
+inside this repo at `homebrew/repomemo.rb` for reference.
 
 ### Curl one-liner (macOS / Linux)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh | bash
 ```
 
-The script downloads the latest release tarball, installs `memsync` to
-`/usr/local/bin/memsync`, and places the templates under
-`/usr/local/share/memsync/templates`. It uses `sudo` only if the prefix is
+The script downloads the latest release tarball, installs `repomemo` to
+`/usr/local/bin/repomemo`, and places the templates under
+`/usr/local/share/repomemo/templates`. It uses `sudo` only if the prefix is
 not writable. Override the install location or version with environment
 variables:
 
 ```bash
-MEMSYNC_PREFIX="$HOME/.local" \
-MEMSYNC_VERSION=v1.0.0 \
-  bash <(curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh)
+REPOMEMO_PREFIX="$HOME/.local" \
+REPOMEMO_VERSION=v1.0.0 \
+  bash <(curl -fsSL https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh)
 ```
 
 ### npm (cross-platform)
 
-The npm package is published as `memsync-cli` (the `memsync` name was
-already taken on the npm registry); it still installs a `memsync` binary
-on your `$PATH`:
+Install the npm package:
 
 ```bash
-npm install -g memsync-cli
+npm install -g repomemo
 # or:
-pnpm add -g memsync-cli
+pnpm add -g repomemo
 # or:
-yarn global add memsync-cli
+yarn global add repomemo
 ```
 
 The package is a thin wrapper around the same Bash CLI, so a Bash 3.2+
@@ -119,31 +117,31 @@ shell is still required.
 ### From source
 
 ```bash
-git clone https://github.com/SUN-1024/memsync.git
-cd memsync
-ln -s "$PWD/bin/memsync" /usr/local/bin/memsync   # or any directory on $PATH
+git clone https://github.com/SUN-1024/repomemo.git
+cd repomemo
+ln -s "$PWD/bin/repomemo" /usr/local/bin/repomemo   # or any directory on $PATH
 ```
 
 ### Without installing
 
 ```bash
-git clone https://github.com/SUN-1024/memsync.git
-./memsync/bin/memsync --help
+git clone https://github.com/SUN-1024/repomemo.git
+./repomemo/bin/repomemo --help
 ```
 
 ## Usage
 
 ```bash
-memsync init                    # initialize in the current directory
-memsync init --target ./my-app  # initialize in a different directory
-memsync init --force            # overwrite existing files (dangerous)
-memsync check                   # validate the current directory
-memsync check ./my-app          # validate another path
-memsync --version
-memsync --help
+repomemo init                    # initialize in the current directory
+repomemo init --target ./my-app  # initialize in a different directory
+repomemo init --force            # overwrite existing files (dangerous)
+repomemo check                   # validate the current directory
+repomemo check ./my-app          # validate another path
+repomemo --version
+repomemo --help
 ```
 
-`memsync init` is **safe by default**: existing files are reported as
+`repomemo init` is **safe by default**: existing files are reported as
 *skipped*, never overwritten silently. Pass `--force` only when you know you
 want to replace the current scaffold.
 
@@ -232,39 +230,39 @@ that reads CLAUDE.md or AGENTS.md.
 
 ## Supported AI coding agents
 
-memsync ships with two adapters because different agents read different
+repomemo ships with two adapters because different agents read different
 instruction files at session start:
 
 - `CLAUDE.md` — used by agents that natively resolve `@./path` imports.
 - `AGENTS.md` — used by agents that read an explicit numbered file list.
 
-Listed agents are **compatible**, not contributors. memsync does not ship as
+Listed agents are **compatible**, not contributors. repomemo does not ship as
 a plugin to any of them, and they did not author this repository.
 
 ## Development
 
-memsync is a single Bash script plus a `templates/` directory.
+repomemo is a single Bash script plus a `templates/` directory.
 
 ```bash
 # run tests
-bash tests/test_memsync.sh
+bash tests/test_repomemo.sh
 
 # run the CLI directly from the repo without installing
-bash bin/memsync --help
+bash bin/repomemo --help
 
-# memsync should pass its own check on this repository
-bash bin/memsync check .
+# repomemo should pass its own check on this repository
+bash bin/repomemo check .
 ```
 
 ### Releases
 
-1. Update `VERSION` in `bin/memsync` and the `version` / `url` lines in
-   `homebrew/memsync.rb`.
+1. Update `VERSION` in `bin/repomemo` and the `version` / `url` lines in
+   `homebrew/repomemo.rb`.
 2. Tag the commit: `git tag v1.0.0 && git push --tags`. The release workflow
    in `.github/workflows/release.yml` creates a GitHub release from the tag
    and prints the SHA256 of the source tarball.
-3. Copy the SHA256 into `homebrew/memsync.rb` and push the formula to
-   `SUN-1024/homebrew-memsync` so `brew install memsync` picks it up.
+3. Copy the SHA256 into `homebrew/repomemo.rb` and push the formula to
+   `SUN-1024/homebrew-repomemo` so `brew install repomemo` picks it up.
 
 ## What this is *not*
 

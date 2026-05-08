@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# install.sh — one-line installer for memsync.
+# install.sh — one-line installer for repomemo.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/SUN-1024/memsync/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh | bash
 #
 # Environment overrides:
-#   MEMSYNC_VERSION   Tag to install (e.g. v1.0.0). Default: latest release.
-#   MEMSYNC_PREFIX    Install prefix. Default: /usr/local. Falls back to
-#                     PREFIX if MEMSYNC_PREFIX is unset.
+#   REPOMEMO_VERSION   Tag to install (e.g. v1.0.0). Default: latest release.
+#   REPOMEMO_PREFIX    Install prefix. Default: /usr/local. Falls back to
+#                     PREFIX if REPOMEMO_PREFIX is unset.
 #
-# After install, `memsync` lives at $PREFIX/bin/memsync and templates/ live
-# at $PREFIX/share/memsync/templates.
+# After install, `repomemo` lives at $PREFIX/bin/repomemo and templates/ live
+# at $PREFIX/share/repomemo/templates.
 
 set -euo pipefail
 
-REPO="SUN-1024/memsync"
-VERSION="${MEMSYNC_VERSION:-latest}"
-PREFIX="${MEMSYNC_PREFIX:-${PREFIX:-/usr/local}}"
+REPO="SUN-1024/repomemo"
+VERSION="${REPOMEMO_VERSION:-latest}"
+PREFIX="${REPOMEMO_PREFIX:-${PREFIX:-/usr/local}}"
 TMP=""
 
 cleanup() {
@@ -26,7 +26,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-err() { echo "memsync-install: $*" >&2; }
+err() { echo "repomemo-install: $*" >&2; }
 
 resolve_version() {
   if [ "$VERSION" != "latest" ]; then
@@ -53,16 +53,16 @@ main() {
   fi
 
   local src url
-  TMP="$(mktemp -d -t memsync-install.XXXXXX)"
+  TMP="$(mktemp -d -t repomemo-install.XXXXXX)"
 
   url="https://github.com/${REPO}/archive/refs/tags/${tag}.tar.gz"
   echo "==> Downloading ${url}"
   curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "$url" -o "$TMP/m.tgz"
   tar -xzf "$TMP/m.tgz" -C "$TMP"
-  src="$TMP/memsync-${tag#v}"
+  src="$TMP/repomemo-${tag#v}"
 
-  if [ ! -x "$src/bin/memsync" ]; then
-    err "archive missing bin/memsync (looked at $src/bin/memsync)"
+  if [ ! -x "$src/bin/repomemo" ]; then
+    err "archive missing bin/repomemo (looked at $src/bin/repomemo)"
     exit 1
   fi
   if [ ! -d "$src/templates" ]; then
@@ -80,14 +80,14 @@ main() {
     sudo="sudo"
     echo "==> ${PREFIX} is not writable; using sudo (you may be prompted)"
   fi
-  local share="$PREFIX/share/memsync"
+  local share="$PREFIX/share/repomemo"
   $sudo mkdir -p "$PREFIX/bin" "$share"
 
   echo "==> Installing templates to ${share}/templates"
   $sudo rm -rf "$share/templates"
   $sudo cp -R "$src/templates" "$share/templates"
 
-  echo "==> Installing memsync to ${PREFIX}/bin/memsync"
+  echo "==> Installing repomemo to ${PREFIX}/bin/repomemo"
   # Rewrite TEMPLATE_DIR so the installed script resolves the share path
   # instead of looking for a sibling templates/ directory.
   awk -v target="$share/templates" '
@@ -97,25 +97,25 @@ main() {
       next
     }
     { print }
-  ' "$src/bin/memsync" > "$TMP/memsync_patched"
+  ' "$src/bin/repomemo" > "$TMP/repomemo_patched"
 
-  $sudo install -m 0755 "$TMP/memsync_patched" "$PREFIX/bin/memsync"
+  $sudo install -m 0755 "$TMP/repomemo_patched" "$PREFIX/bin/repomemo"
 
   echo
   echo "==> Installed."
-  "$PREFIX/bin/memsync" --version
+  "$PREFIX/bin/repomemo" --version
 
   case ":$PATH:" in
     *":$PREFIX/bin:"*) ;;
-    *) echo "Note: ${PREFIX}/bin is not on your PATH; add it before running 'memsync'." ;;
+    *) echo "Note: ${PREFIX}/bin is not on your PATH; add it before running 'repomemo'." ;;
   esac
 
   cat <<MSG
 
 Next:
   cd /path/to/your/repo
-  memsync init       # create .ai/, CLAUDE.md, AGENTS.md
-  memsync check      # validate the scaffold
+  repomemo init       # create .ai/, CLAUDE.md, AGENTS.md
+  repomemo check      # validate the scaffold
 
 Docs: https://github.com/${REPO}
 MSG

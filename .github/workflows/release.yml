@@ -24,13 +24,13 @@ jobs:
           echo "stripped=${tag#v}" >> "$GITHUB_OUTPUT"
 
       - name: Run integration tests
-        run: bash tests/test_memsync.sh
+        run: bash tests/test_repomemo.sh
 
       - name: Verify CLI version matches tag
         run: |
-          script_version="$(bash bin/memsync --version | awk '{print $2}')"
+          script_version="$(bash bin/repomemo --version | awk '{print $2}')"
           if [ "$script_version" != "${{ steps.version.outputs.stripped }}" ]; then
-            echo "VERSION mismatch: bin/memsync says $script_version, tag is ${{ steps.version.outputs.stripped }}" >&2
+            echo "VERSION mismatch: bin/repomemo says $script_version, tag is ${{ steps.version.outputs.stripped }}" >&2
             exit 1
           fi
 
@@ -38,12 +38,12 @@ jobs:
         run: |
           curl -fsSL \
             "https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${{ steps.version.outputs.tag }}.tar.gz" \
-            -o "memsync-${{ steps.version.outputs.stripped }}.tar.gz"
+            -o "repomemo-${{ steps.version.outputs.stripped }}.tar.gz"
 
       - name: Compute SHA256
         id: sha
         run: |
-          sum="$(shasum -a 256 "memsync-${{ steps.version.outputs.stripped }}.tar.gz" | awk '{print $1}')"
+          sum="$(shasum -a 256 "repomemo-${{ steps.version.outputs.stripped }}.tar.gz" | awk '{print $1}')"
           echo "sha256=${sum}" >> "$GITHUB_OUTPUT"
           echo "::notice title=Tarball SHA256::${sum}"
 
@@ -53,15 +53,15 @@ jobs:
           tag_name: ${{ steps.version.outputs.tag }}
           name: ${{ steps.version.outputs.tag }}
           body: |
-            memsync ${{ steps.version.outputs.tag }}
+            repomemo ${{ steps.version.outputs.tag }}
 
             Source tarball SHA256:
             ```
             ${{ steps.sha.outputs.sha256 }}
             ```
 
-            Update `homebrew/memsync.rb` (and the canonical formula in
-            `SUN-1024/homebrew-memsync`) with the new `url` and `sha256`,
-            then `brew upgrade memsync`.
+            Update `homebrew/repomemo.rb` (and the canonical formula in
+            `SUN-1024/homebrew-repomemo`) with the new `url` and `sha256`,
+            then `brew upgrade repomemo`.
           files: |
-            memsync-${{ steps.version.outputs.stripped }}.tar.gz
+            repomemo-${{ steps.version.outputs.stripped }}.tar.gz

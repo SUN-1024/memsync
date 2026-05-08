@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tests/test_memsync.sh — integration tests for bin/memsync.
+# tests/test_repomemo.sh — integration tests for bin/repomemo.
 #
 # Runs without any harness: plain Bash assertions against a temporary
 # working directory. Exits 0 when every test passes, 1 otherwise.
@@ -7,7 +7,7 @@
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MEMSYNC="$ROOT/bin/memsync"
+MEMSYNC="$ROOT/bin/repomemo"
 EXPECTED_VERSION="1.0.0"
 
 PASS=0
@@ -18,7 +18,7 @@ FAILED_TESTS=()
 WORK=""
 
 setup() {
-  WORK="$(mktemp -d -t memsync-test.XXXXXX)"
+  WORK="$(mktemp -d -t repomemo-test.XXXXXX)"
 }
 
 teardown() {
@@ -92,7 +92,7 @@ test_version() {
   out="$(bash "$MEMSYNC" --version 2>&1)"
   rc=$?
   assert_eq "$rc" "0" "exit code" || return 1
-  assert_eq "$out" "memsync ${EXPECTED_VERSION}" "version output" || return 1
+  assert_eq "$out" "repomemo ${EXPECTED_VERSION}" "version output" || return 1
 }
 
 # 2. --help exits 0 and mentions the public commands and options.
@@ -168,7 +168,7 @@ test_check_passes_after_init() {
   out="$(bash "$MEMSYNC" check "$WORK" 2>&1)"
   rc=$?
   assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
-  assert_contains "$out" "memsync check: OK" "OK summary" || return 1
+  assert_contains "$out" "repomemo check: OK" "OK summary" || return 1
   if printf '%s' "$out" | grep -q "^FAIL"; then
     echo "  unexpected FAIL line in output" >&2
     return 1
@@ -185,10 +185,10 @@ test_check_fails_on_empty() {
     return 1
   fi
   assert_contains "$out" "missing" "reports missing files" || return 1
-  assert_contains "$out" "memsync check:" "summary line"   || return 1
+  assert_contains "$out" "repomemo check:" "summary line"   || return 1
 }
 
-# 8. memsync passes its own check (the repo follows the convention it ships).
+# 8. repomemo passes its own check (the repo follows the convention it ships).
 test_self_check() {
   local out rc
   out="$(bash "$MEMSYNC" check "$ROOT" 2>&1)"
@@ -197,17 +197,17 @@ test_self_check() {
     || { echo "$out" | sed 's/^/    /' >&2; return 1; }
 }
 
-echo "running memsync integration tests against $MEMSYNC"
+echo "running repomemo integration tests against $MEMSYNC"
 echo
 
-run_test "memsync --version"                       test_version
-run_test "memsync --help"                          test_help
-run_test "memsync init creates the full scaffold"  test_init_creates_all_files
-run_test "memsync init is idempotent"              test_init_idempotent
-run_test "memsync init --force overwrites"         test_init_force_overwrites
-run_test "memsync check passes after init"         test_check_passes_after_init
-run_test "memsync check fails on empty dir"        test_check_fails_on_empty
-run_test "memsync passes its own check"            test_self_check
+run_test "repomemo --version"                       test_version
+run_test "repomemo --help"                          test_help
+run_test "repomemo init creates the full scaffold"  test_init_creates_all_files
+run_test "repomemo init is idempotent"              test_init_idempotent
+run_test "repomemo init --force overwrites"         test_init_force_overwrites
+run_test "repomemo check passes after init"         test_check_passes_after_init
+run_test "repomemo check fails on empty dir"        test_check_fails_on_empty
+run_test "repomemo passes its own check"            test_self_check
 
 echo
 echo "summary: ${PASS} passed, ${FAIL} failed"

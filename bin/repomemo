@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# memsync — initialize and validate shared AI project memory in a repository
+# repomemo — initialize and validate shared AI project memory in a repository
 #
 # Usage:
-#   memsync init [--force] [--target DIR]
-#   memsync check [PATH]
-#   memsync --help
-#   memsync --version
+#   repomemo init [--force] [--target DIR]
+#   repomemo check [PATH]
+#   repomemo --help
+#   repomemo --version
 #
-# memsync is tool-neutral. It generates a `.ai/` scaffold plus thin root
+# repomemo is tool-neutral. It generates a `.ai/` scaffold plus thin root
 # adapters (`CLAUDE.md`, `AGENTS.md`) so any AI coding agent that respects
 # either convention sees the same project memory.
 
@@ -32,7 +32,7 @@ SCRIPT_DIR="$(resolve_script_dir)"
 # rewrites this line at install time to point at the share directory.
 TEMPLATE_DIR="$(dirname "$SCRIPT_DIR")/templates"
 
-# All files produced by `memsync init`, relative to the project root.
+# All files produced by `repomemo init`, relative to the project root.
 SCAFFOLD_FILES=(
   ".ai/README.md"
   ".ai/project.md"
@@ -47,13 +47,13 @@ SCAFFOLD_FILES=(
 
 usage() {
   cat <<EOF
-memsync ${VERSION} — shared AI project memory scaffold
+repomemo ${VERSION} — shared AI project memory scaffold
 
 USAGE
-  memsync init [--force] [--target DIR]
-  memsync check [PATH]
-  memsync --help
-  memsync --version
+  repomemo init [--force] [--target DIR]
+  repomemo check [PATH]
+  repomemo --help
+  repomemo --version
 
 COMMANDS
   init     Generate the .ai/ scaffold and root adapters in DIR (default: cwd).
@@ -68,16 +68,16 @@ OPTIONS
   --version, -v   Show the version number.
 
 DOCS
-  https://github.com/SUN-1024/memsync
+  https://github.com/SUN-1024/repomemo
 EOF
 }
 
 print_version() {
-  echo "memsync ${VERSION}"
+  echo "repomemo ${VERSION}"
 }
 
 err() {
-  echo "memsync: $*" >&2
+  echo "repomemo: $*" >&2
 }
 
 # Resolve target directory; create it if missing.
@@ -117,7 +117,7 @@ cmd_init() {
         ;;
       *)
         err "unknown option for init: $1"
-        echo "Run 'memsync --help' for usage." >&2
+        echo "Run 'repomemo --help' for usage." >&2
         exit 2
         ;;
     esac
@@ -125,7 +125,7 @@ cmd_init() {
 
   if [ ! -d "$TEMPLATE_DIR" ]; then
     err "template directory not found at: $TEMPLATE_DIR"
-    err "this build of memsync is broken — please reinstall."
+    err "this build of repomemo is broken — please reinstall."
     exit 1
   fi
 
@@ -161,7 +161,7 @@ cmd_init() {
   done
 
   echo
-  echo "memsync init: ${created} created, ${overwritten} overwritten, ${skipped} skipped"
+  echo "repomemo init: ${created} created, ${overwritten} overwritten, ${skipped} skipped"
   if [ "$missing_template" -gt 0 ]; then
     err "${missing_template} template file(s) missing — installation may be incomplete."
     exit 1
@@ -208,11 +208,11 @@ cmd_check() {
 
   echo
   if [ "$fail" -eq 0 ]; then
-    echo "memsync check: OK (${#SCAFFOLD_FILES[@]} files)"
+    echo "repomemo check: OK (${#SCAFFOLD_FILES[@]} files)"
     return 0
   fi
 
-  echo "memsync check: ${fail} problem(s) in $target"
+  echo "repomemo check: ${fail} problem(s) in $target"
   return 1
 }
 
@@ -239,7 +239,7 @@ main() {
       ;;
     *)
       err "unknown command: $1"
-      echo "Run 'memsync --help' for usage." >&2
+      echo "Run 'repomemo --help' for usage." >&2
       exit 2
       ;;
   esac
