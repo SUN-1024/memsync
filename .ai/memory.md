@@ -14,16 +14,17 @@ task. Remove entries that go stale.
 
 ## Adapter conventions
 
-- `CLAUDE.md` MUST stay thin: only `@./path` imports plus, optionally, a few
-  lines of agent-specific instruction. No prose duplicated from `.ai/`.
+- `CLAUDE.md` and `opencode.md` MUST stay thin: only `@./path` imports plus,
+  optionally, a few lines of agent-specific instruction. No prose duplicated
+  from `.ai/`.
 - `AGENTS.md` MUST list the seven `.ai/` files in the read order defined in
   `.ai/README.md`, and MUST restate the post-task update rule. Agents that
   read `AGENTS.md` typically do not resolve `@`-imports, so the list is
   explicit.
-- `CLAUDE.md` and `AGENTS.md` exist in **two places**: at the repo root
-  (repomemo's own adapters) and under `templates/` (what `repomemo init` writes
-  for users). Both sets must always be in sync with each other and with
-  `bin/repomemo`'s `SCAFFOLD_FILES` array.
+- `CLAUDE.md`, `AGENTS.md`, and `opencode.md` exist in **two places**: at the
+  repo root (repomemo's own adapters) and under `templates/` (what `repomemo
+  init` writes for users). All three sets must always be in sync with each
+  other and with `bin/repomemo`'s `SCAFFOLD_FILES` array.
 
 ## CLI conventions
 
@@ -57,10 +58,11 @@ task. Remove entries that go stale.
   `https://raw.githubusercontent.com/SUN-1024/repomemo/main/install.sh`,
   so any change must keep `set -euo pipefail` semantics safe and must keep
   honoring `REPOMEMO_VERSION` and `REPOMEMO_PREFIX`.
-- Bumping a version is a four-file change: `bin/repomemo` (`VERSION=`),
+- Bumping a version is a five-file change: `bin/repomemo` (`VERSION=`),
   `homebrew/repomemo.rb` (`version`, `url`, `sha256`), `package.json`
-  (`version`), and a new git tag. `install.sh` reads the latest tag at
-  runtime, so it does not need an edit.
+  (`version`), plus the `EXPECTED_VERSION` in `tests/test_repomemo.sh`, and
+  a new git tag. `install.sh` reads the latest tag at runtime, so it does
+  not need an edit.
 
 ## Branding
 
@@ -89,7 +91,7 @@ task. Remove entries that go stale.
 - Do not add a hook configuration (`.claude/settings.json`, Cursor rules,
   etc.) here. Hooks belong to the consuming project and depend on its
   language and tooling.
-- Do not rename `.ai/` to something else — both adapters point at it by
+- Do not rename `.ai/` to something else — all three adapters point at it by
   name. A rename is a breaking change for every downstream consumer.
 - Do not add Chinese text inside `.ai/`. It bloats the agent context for
   English-speaking agents and the bilingual coverage already lives in the

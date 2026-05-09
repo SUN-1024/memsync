@@ -8,7 +8,7 @@ set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MEMSYNC="$ROOT/bin/repomemo"
-EXPECTED_VERSION="1.0.1"
+EXPECTED_VERSION="1.1.0"
 
 PASS=0
 FAIL=0
@@ -84,6 +84,7 @@ EXPECTED_FILES=(
   ".ai/handoff.md"
   "CLAUDE.md"
   "AGENTS.md"
+  "opencode.md"
 )
 
 # 1. --version exits 0 and prints the expected version line.
@@ -116,7 +117,7 @@ test_init_creates_all_files() {
   for rel in "${EXPECTED_FILES[@]}"; do
     assert_file_nonempty "$WORK/$rel" || return 1
   done
-  assert_contains "$out" "9 created" "summary line" || return 1
+  assert_contains "$out" "10 created" "summary line" || return 1
 }
 
 # 4. init is idempotent: a second run reports everything as skipped and
@@ -135,7 +136,7 @@ test_init_idempotent() {
   rc=$?
   assert_eq "$rc" "0" "exit code" || return 1
   assert_contains "$out" "0 created" "no new files" || return 1
-  assert_contains "$out" "9 skipped" "all skipped"  || return 1
+  assert_contains "$out" "10 skipped" "all skipped"  || return 1
 
   local after_sums
   after_sums="$(cd "$WORK" && shasum "${EXPECTED_FILES[@]}")"
@@ -153,7 +154,7 @@ test_init_force_overwrites() {
   out="$(bash "$MEMSYNC" init --target "$WORK" --force 2>&1)"
   rc=$?
   assert_eq "$rc" "0" "exit code" || return 1
-  assert_contains "$out" "9 overwritten" "all overwritten" || return 1
+  assert_contains "$out" "10 overwritten" "all overwritten" || return 1
 
   if grep -q "MUTATED" "$WORK/.ai/handoff.md"; then
     echo "  expected --force to replace mutated content, but it remains" >&2

@@ -39,7 +39,8 @@ repomemo/
 │   │   ├── memory.md
 │   │   └── handoff.md
 │   ├── CLAUDE.md
-│   └── AGENTS.md
+│   ├── AGENTS.md
+│   └── opencode.md
 ├── tests/
 │   └── test_repomemo.sh           # integration tests
 ├── homebrew/
@@ -48,6 +49,7 @@ repomemo/
 ├── package.json                  # npm wrapper (package name: repomemo)
 ├── AGENTS.md                     # Codex-style adapter
 ├── CLAUDE.md                     # Claude Code-style adapter
+├── opencode.md                   # OpenCode-style adapter
 ├── README.md                     # English entry point
 ├── README.zh.md                  # Simplified Chinese entry point
 ├── LICENSE                       # MIT
@@ -73,9 +75,10 @@ patches that path at install time so it points at
 
 ### `templates/` — the scaffold source
 
-Contains the seven generic `.ai/` markdown files plus the two root adapters
-(`CLAUDE.md`, `AGENTS.md`). These files are what `repomemo init` writes into a
-target repo. They use tool-neutral language and never contain `TODO`/`TBD`.
+Contains the seven generic `.ai/` markdown files plus the three root adapters
+(`CLAUDE.md`, `AGENTS.md`, `opencode.md`). These files are what `repomemo init`
+writes into a target repo. They use tool-neutral language and never contain
+`TODO`/`TBD`.
 
 ### `.ai/` — repomemo's own project memory
 
@@ -126,7 +129,7 @@ maintainer:                                      end user (any of):
   → tag v1.X.Y                                     npm install -g repomemo
   → GitHub Action publishes release                  → repomemo init in their repo
   → update homebrew tap with new SHA256                → templates/ copied into .ai/
-  → user `brew upgrade repomemo`                          → CLAUDE.md + AGENTS.md
+  → user `brew upgrade repomemo`                          → CLAUDE.md + AGENTS.md + opencode.md
                                                        → AI agent at session start
                                                          reads .ai/* in fixed order
                                                        → updates handoff.md before

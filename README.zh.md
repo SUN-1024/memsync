@@ -3,11 +3,11 @@
 > **语言:** [English](./README.md) · **简体中文**
 
 一个小型 CLI,把一份共享的、可纳入版本控制的 **AI 项目内存** 写入任何仓库。
-执行 `repomemo init` 之后,任何遵循 `CLAUDE.md` 或 `AGENTS.md` 约定的 AI 编程
+执行 `repomemo init` 之后,任何遵循 `CLAUDE.md`、`AGENTS.md` 或 `opencode.md` 约定的 AI 编程
 agent 都会以同样的顺序读到同样的项目事实。
 
 ```bash
-repomemo init      # 在当前仓库生成 .ai/、CLAUDE.md、AGENTS.md
+repomemo init      # 在当前仓库生成 .ai/、CLAUDE.md、AGENTS.md、opencode.md
 repomemo check     # 校验生成的脚手架是否完整、非空
 ```
 
@@ -27,16 +27,16 @@ npm install -g repomemo
 
 # 2. 在你的项目里运行
 cd /path/to/your/repo
-repomemo init      # 写入 .ai/、CLAUDE.md、AGENTS.md(已存在的文件会被跳过)
+repomemo init      # 写入 .ai/、CLAUDE.md、AGENTS.md、opencode.md(已存在的文件会被跳过)
 repomemo check     # 校验脚手架是否完整、非空
 
 # 3. 让它真正属于你的项目
 #    编辑 .ai/project.md 与 .ai/architecture.md,如实描述项目
 #    替换 .ai/definition-of-done.md 中的"必需命令"段落
-#    git add .ai CLAUDE.md AGENTS.md && git commit -m "chore: adopt repomemo"
+#    git add .ai CLAUDE.md AGENTS.md opencode.md && git commit -m "chore: adopt repomemo"
 ```
 
-第 3 步完成后,所有遵循 `CLAUDE.md` 或 `AGENTS.md` 约定的 AI 编程 agent
+第 3 步完成后,所有遵循 `CLAUDE.md`、`AGENTS.md` 或 `opencode.md` 约定的 AI 编程 agent
 都会在会话开始时按相同顺序读到相同的项目事实。
 
 ## 它生成什么
@@ -52,9 +52,10 @@ repomemo check     # 校验脚手架是否完整、非空
   handoff.md             # 最近一次任务的滚动状态
 CLAUDE.md                # 适配器:用于解析 @./path 导入的 agent
 AGENTS.md                # 适配器:用于读编号清单的 agent
+opencode.md              # 适配器:用于解析 @./path 导入的 agent
 ```
 
-`CLAUDE.md` 与 `AGENTS.md` 不复制 `.ai/` 中的任何内容,只做指向。每个 agent
+`CLAUDE.md`、`AGENTS.md` 与 `opencode.md` 不复制 `.ai/` 中的任何内容,只做指向。每个 agent
 读到的是同一套文件、同样的顺序。
 
 ## 为什么需要它
@@ -145,8 +146,9 @@ repomemo --help
 
 ```
 会话开始
-  读取 CLAUDE.md 的 agent  ─► 解析 @./path 导入  ─► 按顺序加载 .ai/*
-  读取 AGENTS.md 的 agent  ─► 按编号清单读取    ─► 按顺序加载 .ai/*
+  读取 CLAUDE.md 的 agent   ─► 解析 @./path 导入  ─► 按顺序加载 .ai/*
+  读取 opencode.md 的 agent ─► 解析 @./path 导入  ─► 按顺序加载 .ai/*
+  读取 AGENTS.md 的 agent   ─► 按编号清单读取    ─► 按顺序加载 .ai/*
 
 agent 开始工作
   在报告"完成"之前:
@@ -174,7 +176,7 @@ agent 开始工作
 
 ```text
 请将本仓库初始化为可被任意 AI 编程 agent 共用的项目内存结构,只要该 agent
-读取 CLAUDE.md 或 AGENTS.md。
+读取 CLAUDE.md、AGENTS.md 或 opencode.md。
 
 1. 先阅读仓库本身:README、依赖清单、源码目录、配置、脚本、测试、CI、
    Docker / 部署文件、文档,以及已有的 AI 指令文件。只写仓库支持的事实——
@@ -199,6 +201,7 @@ agent 开始工作
 3. 创建轻量根适配器:
    - `CLAUDE.md` 只包含 `@./.ai/<file>` 导入,顺序与 `.ai/README.md` 中
      定义的阅读顺序一致。
+   - `opencode.md` 也包含同样顺序的 `@./.ai/<file>` 导入。
    - `AGENTS.md` 用编号清单显式列出同样 7 个文件的同样顺序,并写明规则:
      "后续涉及实现、调试、重构、评审、文档、初始化、依赖、配置、测试的
      任务,完成前必须先更新 `.ai/handoff.md`;出现稳定知识时同步更新
@@ -212,10 +215,11 @@ agent 开始工作
 
 ## 受支持的 AI 编程 agent
 
-repomemo 同时提供两份适配器,因为不同的 agent 在会话开始时会读取不同的指令
+repomemo 同时提供三份适配器,因为不同的 agent 在会话开始时会读取不同的指令
 文件:
 
 - `CLAUDE.md` —— 用于原生支持 `@./path` 导入的 agent。
+- `opencode.md` —— 用于原生支持 `@./path` 导入的 agent。
 - `AGENTS.md` —— 用于按编号清单读取文件的 agent。
 
 列出的 agent 是 **兼容方**,不是项目贡献者。repomemo 不是它们任何一个的插件,

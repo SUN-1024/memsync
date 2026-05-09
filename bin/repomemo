@@ -8,12 +8,12 @@
 #   repomemo --version
 #
 # repomemo is tool-neutral. It generates a `.ai/` scaffold plus thin root
-# adapters (`CLAUDE.md`, `AGENTS.md`) so any AI coding agent that respects
-# either convention sees the same project memory.
+# adapters (`CLAUDE.md`, `AGENTS.md`, `opencode.md`) so any AI coding agent
+# that respects any of these conventions sees the same project memory.
 
 set -euo pipefail
 
-VERSION="1.0.1"
+VERSION="1.1.0"
 
 # Resolve the script's own directory, following symlinks (e.g. from Homebrew).
 resolve_script_dir() {
@@ -43,6 +43,7 @@ SCAFFOLD_FILES=(
   ".ai/handoff.md"
   "CLAUDE.md"
   "AGENTS.md"
+  "opencode.md"
 )
 
 usage() {

@@ -21,18 +21,20 @@ same commit.
 
 1. **Every required command above passes locally.**
 2. **All seven `.ai/` files exist and are non-empty.**
-3. **The two root adapters stay in sync.**
+3. **The three root adapters stay in sync.**
    - `CLAUDE.md` lists every `.ai/` file via `@./path` imports in the read
      order defined by `.ai/README.md`.
    - `AGENTS.md` lists the same files in the same order, plus the post-task
      update rule.
+   - `opencode.md` lists every `.ai/` file via `@./path` imports in the read
+     order defined by `.ai/README.md`.
 4. **The two root READMEs stay mirrored.**
    - `README.md` (English) and `README.zh.md` (Simplified Chinese) cover the
      same ground; whichever was edited, the other is updated in the same
      change.
 5. **`templates/` files match `.ai/` semantics.** When the scaffold gains or
-   loses a file, both `templates/` and the file lists in
-   `bin/repomemo` (`SCAFFOLD_FILES`), `CLAUDE.md`, and `AGENTS.md` are
+   loses a file, `templates/`, the file lists in `bin/repomemo`
+   (`SCAFFOLD_FILES`), `CLAUDE.md`, `AGENTS.md`, and `opencode.md` are
    updated together.
 6. **`bin/repomemo` is executable** (`chmod +x`) and committed with mode
    `100755`.

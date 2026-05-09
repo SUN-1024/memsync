@@ -16,8 +16,8 @@ Agents should load these files in this exact order, every session:
 6. `memory.md` — durable, slow-changing project knowledge.
 7. `handoff.md` — rolling state of the most recent task.
 
-The two root adapters (`CLAUDE.md` and `AGENTS.md`) both point into this
-directory; do not duplicate content into them.
+The three root adapters (`CLAUDE.md`, `AGENTS.md`, `opencode.md`) all point
+into this directory; do not duplicate content into them.
 
 ## Write rules
 

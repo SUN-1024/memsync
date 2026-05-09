@@ -3,15 +3,16 @@
 ## Purpose
 
 `repomemo` is a small CLI tool plus a markdown scaffold. Running `repomemo init`
-in a repository drops a `.ai/` directory and two thin root adapter files
-(`CLAUDE.md`, `AGENTS.md`) so any AI coding agent that respects either
-convention reads the same project facts in the same order at session start.
+in a repository drops a `.ai/` directory and three thin root adapter files
+(`CLAUDE.md`, `AGENTS.md`, `opencode.md`) so any AI coding agent that respects
+any of these conventions reads the same project facts in the same order at
+session start.
 
 It exists because:
 
 - Different AI agents read different instruction files
-  (`CLAUDE.md` resolves `@./path` imports; `AGENTS.md` is read as a plain
-  numbered list).
+  (`CLAUDE.md` and `opencode.md` resolve `@./path` imports; `AGENTS.md` is read
+  as a plain numbered list).
 - Without a shared layout, two agents in the same repo drift: one knows about
   a decision the other does not, and a human has to reconcile them.
 
@@ -46,7 +47,7 @@ generates: repomemo's own `.ai/` directory follows the convention it ships.
 - Not a runtime, library, or language-specific framework.
 - Not a hook system or settings file generator (Claude Code's
   `settings.json`, Cursor's rules, etc. live elsewhere).
-- Not opinionated about which AI coding agent is "primary" — both adapters
+- Not opinionated about which AI coding agent is "primary" — all three adapters
   are equal.
 - Not a replacement for repo-specific docs like `CONTRIBUTING.md` or ADRs;
   repomemo is the *agent-facing* layer that complements them.

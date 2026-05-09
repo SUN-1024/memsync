@@ -4,11 +4,11 @@
 
 A small CLI that drops a shared, version-controlled **AI project memory** into
 any repository. Run `repomemo init` and any AI coding agent that respects
-either the `CLAUDE.md` or `AGENTS.md` convention will read the same project
-facts, in the same order, every session.
+the `CLAUDE.md`, `AGENTS.md`, or `opencode.md` convention will read the same
+project facts, in the same order, every session.
 
 ```bash
-repomemo init      # scaffold .ai/, CLAUDE.md, AGENTS.md in the current repo
+repomemo init      # scaffold .ai/, CLAUDE.md, AGENTS.md, opencode.md in the current repo
 repomemo check     # validate the scaffold is complete and non-empty
 ```
 
@@ -29,17 +29,17 @@ npm install -g repomemo
 
 # 2. Run inside your project
 cd /path/to/your/repo
-repomemo init      # writes .ai/, CLAUDE.md, AGENTS.md (skips files that already exist)
+repomemo init      # writes .ai/, CLAUDE.md, AGENTS.md, opencode.md (skips files that already exist)
 repomemo check     # validates the scaffold is complete and non-empty
 
 # 3. Make it yours
 #    edit .ai/project.md and .ai/architecture.md to describe the real project
 #    replace the "Required commands" section in .ai/definition-of-done.md
-#    git add .ai CLAUDE.md AGENTS.md && git commit -m "chore: adopt repomemo"
+#    git add .ai CLAUDE.md AGENTS.md opencode.md && git commit -m "chore: adopt repomemo"
 ```
 
-After step 3, every AI coding agent that respects `CLAUDE.md` or `AGENTS.md`
-reads the same files in the same order at session start.
+After step 3, every AI coding agent that respects `CLAUDE.md`, `AGENTS.md`,
+or `opencode.md` reads the same files in the same order at session start.
 
 ## What it generates
 
@@ -54,10 +54,11 @@ reads the same files in the same order at session start.
   handoff.md             # rolling state of the latest task
 CLAUDE.md                # adapter for agents that resolve @./path imports
 AGENTS.md                # adapter for agents that read a numbered file list
+opencode.md              # adapter for agents that resolve @./path imports
 ```
 
-`CLAUDE.md` and `AGENTS.md` never duplicate content; they only point into
-`.ai/`. Every agent sees the same files in the same order.
+`CLAUDE.md`, `AGENTS.md`, and `opencode.md` never duplicate content; they only
+point into `.ai/`. Every agent sees the same files in the same order.
 
 ## Why
 
@@ -153,8 +154,9 @@ everything.
 
 ```
 session starts
-  agent that reads CLAUDE.md  ─► resolves @./path imports ─► loads .ai/* in order
-  agent that reads AGENTS.md  ─► follows the numbered list ─► loads .ai/* in order
+  agent that reads CLAUDE.md   ─► resolves @./path imports ─► loads .ai/* in order
+  agent that reads opencode.md ─► resolves @./path imports ─► loads .ai/* in order
+  agent that reads AGENTS.md   ─► follows the numbered list ─► loads .ai/* in order
 
 agent does work
   before reporting "done":
@@ -184,7 +186,7 @@ fresh session of any AI coding agent in the target repository:
 
 ```text
 Initialize this repository for shared AI project memory across any agent
-that reads CLAUDE.md or AGENTS.md.
+that reads CLAUDE.md, AGENTS.md, or opencode.md.
 
 1. Inspect the repo first: READMEs, package manifests, source tree, configs,
    scripts, tests, CI, Docker / deploy files, docs, and any existing AI
@@ -215,6 +217,8 @@ that reads CLAUDE.md or AGENTS.md.
 3. Create thin root adapters:
    - `CLAUDE.md` containing only `@./.ai/<file>` imports for the seven files
      above, in the read order defined by `.ai/README.md`.
+   - `opencode.md` containing the same `@./.ai/<file>` imports in the same
+     read order.
    - `AGENTS.md` listing the same seven files in the same order as a numbered
      reading list, plus the rule: "After future implementation, debugging,
      refactor, review, documentation, setup, dependency, config, or test
@@ -230,10 +234,11 @@ that reads CLAUDE.md or AGENTS.md.
 
 ## Supported AI coding agents
 
-repomemo ships with two adapters because different agents read different
+repomemo ships with three adapters because different agents read different
 instruction files at session start:
 
 - `CLAUDE.md` — used by agents that natively resolve `@./path` imports.
+- `opencode.md` — used by agents that natively resolve `@./path` imports.
 - `AGENTS.md` — used by agents that read an explicit numbered file list.
 
 Listed agents are **compatible**, not contributors. repomemo does not ship as

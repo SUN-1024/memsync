@@ -5,76 +5,77 @@ sections with the latest state; this file is not a changelog.
 
 ## Latest task
 
-Rename the project from `memsync` to `RepoMemo` (CLI binary: `repomemo`).
-Every file, path, URL, package name, env var, and class name updated.
+Add OpenCode as a first-class supported agent alongside Claude Code and Codex.
+
+OpenCode auto-loads `CLAUDE.md` by default, but repomemo now ships a dedicated
+`opencode.md` adapter (identical `@-import` pattern to `CLAUDE.md`) so that
+OpenCode users see explicit, first-class support in every scaffolded repository.
+The scaffold grows from 9 files to 10 (7 under `.ai/` plus 3 root adapters).
 
 ## Files changed
 
-- `bin/repomemo` (renamed from `bin/memsync`) — CLI script; all references
-  updated.
-- `homebrew/repomemo.rb` (renamed from `homebrew/memsync.rb`) — class
-  `Repomemo`, desc, url, inreplace, and test block updated.
-- `tests/test_repomemo.sh` (renamed from `tests/test_memsync.sh`) —
-  binary path, test names, temp dir prefix updated.
-- `install.sh` — repo, binary, share paths, env vars (`REPOMEMO_VERSION`,
-  `REPOMEMO_PREFIX`), error messages updated.
-- `package.json` — name `repomemo`, all URLs, bin, scripts updated.
-- `README.md`, `README.zh.md` — title `RepoMemo`, all references, npm
-  disclaimers removed (bare name is available), env var names updated.
-- `.ai/architecture.md`, `.ai/project.md`, `.ai/definition-of-done.md`,
-  `.ai/memory.md` — all references updated; npm `-cli` suffix and
-  disclaimer removed.
+- `opencode.md` (new) — root adapter for OpenCode, `@./path` imports.
+- `templates/opencode.md` (new) — template copy shipped to users by `init`.
+- `bin/repomemo` — added `"opencode.md"` to `SCAFFOLD_FILES`; version bumped
+  to `1.1.0`; header comment updated.
+- `tests/test_repomemo.sh` — `EXPECTED_VERSION` bumped; `opencode.md` added
+  to `EXPECTED_FILES`; count assertions updated from `9` to `10`.
+- `homebrew/repomemo.rb` — version, url tag bumped to `v1.1.0`;
+  `opencode.md` added to test-block existence assertions; SHA256 set to
+  `PLACEHOLDER_UPDATE_AFTER_RELEASE` (real value pinned after release).
+- `package.json` — version bumped to `1.1.0`; `opencode` added to keywords.
+- `README.md`, `README.zh.md` — every mention of "two adapters" updated to
+  "three adapters"; `opencode.md` added to all code blocks, quick-start,
+  what-it-generates, supported-agents, and paste-a-prompt sections.
+- `.ai/README.md` — "two root adapters" → "three root adapters".
+- `.ai/project.md` — purpose and non-goals updated to mention three adapters.
+- `.ai/architecture.md` — repository layout tree updated; `templates/`
+  description mentions three root adapters; data-flow diagram updated.
+- `.ai/definition-of-done.md` — root-adapter sync rule expanded to three;
+  template-sync rule expanded.
+- `.ai/memory.md` — adapter conventions, version-bump checklist, and common
+  pitfalls updated for three adapters.
 - `.ai/handoff.md` — this file.
-- `.github/workflows/release.yml` — test and binary paths, tarball names,
-  release body, formula path updated.
-- `templates/.ai/handoff.md` — scaffold reference updated.
 
 ## Commands run
 
 - `bash tests/test_repomemo.sh` → 8/8 PASS
-- `bash bin/repomemo check .` → 9/9 PASS
+- `bash bin/repomemo check .` → 10/10 PASS
 - `git status` → clean before this commit.
 
 ## Checks performed
 
-- `grep -rn memsync` across the repo (excluding .git/) returns nothing.
-- `grep -rn repomemo-cli` returns nothing; `grep -rn MEMSYNC_` returns
-  nothing.
+- No stale `9 created` / `9 skipped` / `9 overwritten` strings remain in
+  `tests/test_repomemo.sh`.
+- `grep -rn "two root adapters"` returns nothing.
+- `grep -rn "two adapters"` returns nothing.
+- `grep -rn "both adapters"` returns nothing.
+- `grep -rn "TODO"` and `grep -rn "TBD"` inside `.ai/` return nothing.
 - Integration suite green.
 - Self-check green.
-- No `TODO`/`TBD`/placeholder text inside `.ai/`.
 
 ## Current state
 
-- All 14 files renamed or edited; the repo is a consistent `repomemo`
-  codebase.
-- The old `v1.0.0` release infrastructure still references `memsync` on
-  GitHub (tap repo `SUN-1024/homebrew-memsync`, release tag `v1.0.0`,
-  published tarball). Those external artifacts will be replaced when a
-  fresh release is cut from the renamed repo.
+- The repo supports three root adapters: `CLAUDE.md`, `AGENTS.md`,
+  `opencode.md`.
+- All documentation (`.ai/`, `README.md`, `README.zh.md`) is consistent with
+  the three-adapter design.
+- The GitHub repository is already renamed to `SUN-1024/repomemo`.
+- The Homebrew tap `SUN-1024/homebrew-repomemo` exists and contains the v1.0.1
+  formula; it needs the v1.1.0 formula after the release is published.
 
 ## Unresolved unknowns
 
-- GitHub repo has not been renamed from `SUN-1024/memsync` to
-  `SUN-1024/repomemo`. This must be done manually by the owner via GitHub
-  Settings.
-- The Homebrew tap `SUN-1024/homebrew-repomemo` does not exist yet; it
-  must be created and populated with the renamed formula after the GitHub
-  repo is renamed.
-- A new release tag (e.g. `v1.0.0` or `v1.0.1`) must be pushed after the
-  GitHub rename to trigger a fresh release with the correct artifact
-  name.
-- `npm publish` is still pending; it will now publish as `repomemo`
-  instead of `memsync-cli`.
+- A `v1.1.0` release must be cut and its tarball SHA256 captured before the
+  Homebrew formula can reference a real hash.
+- `npm publish` is still pending (no npm account configured).
 
 ## Next safe action
 
 For the maintainer:
 
-1. Rename the GitHub repo `SUN-1024/memsync` → `SUN-1024/repomemo` via
-   GitHub Settings (this keeps stars, watchers, and redirects old URLs).
-2. Create the tap repo `SUN-1024/homebrew-repomemo` and push the renamed
-   formula.
-3. Push a new tag (`v1.0.1` recommended, since `v1.0.0` already exists
-   under the old name) to trigger a fresh release.
-4. `npm publish` from the renamed repo.
+1. Commit and push the current change to `origin/main`.
+2. Push tag `v1.1.0` to trigger the GitHub Actions release workflow.
+3. Copy the SHA256 from the release workflow output into
+   `homebrew/repomemo.rb` and push the updated formula to
+   `SUN-1024/homebrew-repomemo`.

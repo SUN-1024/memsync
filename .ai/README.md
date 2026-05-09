@@ -17,8 +17,8 @@ Agents should load these files in this exact order, every session:
 6. `memory.md` — durable, slow-changing project knowledge.
 7. `handoff.md` — rolling state of the most recent task.
 
-The two root adapters (`CLAUDE.md` and `AGENTS.md`) both point into this
-directory; do not duplicate content into them.
+The three root adapters (`CLAUDE.md`, `AGENTS.md`, `opencode.md`) all point
+into this directory; do not duplicate content into them.
 
 ## Write rules
 
@@ -36,7 +36,7 @@ directory; do not duplicate content into them.
 ## Why this exists
 
 Different AI coding agents read different instruction files at session start:
-some natively resolve `@./path` imports inside `CLAUDE.md`; others read
-`AGENTS.md` as a plain numbered list. By putting the actual content in `.ai/`
-and keeping both root adapters thin, every supported agent ends up reading the
-same authoritative documents in the same order.
+some natively resolve `@./path` imports inside `CLAUDE.md` or `opencode.md`;
+others read `AGENTS.md` as a plain numbered list. By putting the actual content
+in `.ai/` and keeping the root adapters thin, every supported agent ends up
+reading the same authoritative documents in the same order.
