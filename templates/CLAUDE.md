@@ -5,4 +5,3 @@
 @.ai/review-checklist.md
 @.ai/memory.md
 @.ai/handoff.md
-@.ai/goal-driven-prompt.md

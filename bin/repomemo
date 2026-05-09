@@ -41,7 +41,6 @@ SCAFFOLD_FILES=(
   ".ai/review-checklist.md"
   ".ai/memory.md"
   ".ai/handoff.md"
-  ".ai/goal-driven-prompt.md"
   "CLAUDE.md"
   "AGENTS.md"
 )
