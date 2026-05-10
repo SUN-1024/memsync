@@ -30,6 +30,9 @@ task. Remove entries that go stale.
 
 - `bin/repomemo init` is **safe by default** — it skips existing files. Only
   `--force` overwrites. Never change this default without a release note.
+- `bin/repomemo check --strict` verifies adapter read order and content drift,
+  and in the repomemo source repo also verifies that `templates/` matches the
+  runtime `SCAFFOLD_FILES` list.
 - `bin/repomemo` resolves its template directory relative to its own location
   (following symlinks). The Homebrew formula rewrites the resolved path at
   install time; do not rely on environment variables for template lookup.
@@ -80,9 +83,9 @@ task. Remove entries that go stale.
 
 ## Cross-platform
 
-- Do not introduce symlinks inside the repo. `AGENTS.md` is a real file, not
-  a link to `CLAUDE.md`. Reasons: Windows clones, shallow clones, and some
-  CI runners handle symlinks inconsistently.
+- Do not introduce symlinks inside the repo. `CLAUDE.md`, `AGENTS.md`, and
+  `opencode.md` are real files. Reasons: Windows clones, shallow clones, and
+  some CI runners handle symlinks inconsistently.
 - Bash version target is **3.2** (macOS default). Avoid Bash 4+ syntax such
   as associative arrays.
 

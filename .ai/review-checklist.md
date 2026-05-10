@@ -12,15 +12,17 @@ adopted the scaffold; items without a marker apply to both.
 - [ ] `.ai/handoff.md` was updated for this change before the PR was opened.
 - [ ] If stable knowledge emerged during the work, `.ai/memory.md` was
       updated and the entry is genuinely durable (not task-specific).
-- [ ] `CLAUDE.md` and `AGENTS.md` list the **same** `.ai/` files in the
-      **same** order. (scaffold + downstream)
+- [ ] `CLAUDE.md`, `AGENTS.md`, and `opencode.md` list the **same** `.ai/`
+      files in the **same** order. (scaffold + downstream)
 
 ## Tests
 
 - [ ] **(downstream)** Unit / integration tests added or updated for the change.
 - [ ] **(downstream)** Test commands recorded in `.ai/definition-of-done.md`
       still pass locally.
-- [ ] **(scaffold)** N/A — there is no test suite; verification is manual.
+- [ ] **(scaffold)** `bash tests/test_repomemo.sh`,
+      `bash bin/repomemo check .`, and
+      `bash bin/repomemo check --strict .` pass.
 
 ## Typing / static analysis
 

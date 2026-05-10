@@ -44,5 +44,6 @@ class Repomemo < Formula
 
     # check must pass on the directory we just initialized
     system bin/"repomemo", "check", testpath/"target"
+    system bin/"repomemo", "check", "--strict", testpath/"target"
   end
 end

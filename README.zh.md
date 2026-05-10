@@ -12,8 +12,9 @@ repomemo check     # 校验生成的脚手架是否完整、非空
 ```
 
 repomemo 是 **工具中立** 的:它不属于任何一个 AI agent,也不是由任何一个 agent
-署名开发。被支持/兼容的 agent 列表(Claude Code、Codex、Cursor,以及任何读取
-`CLAUDE.md` 或 `AGENTS.md` 的工具)与项目的贡献者列表不是一回事。
+署名开发。被支持/兼容的 agent 列表(Claude Code、OpenCode、Codex、Cursor,
+以及任何读取 `CLAUDE.md`、`AGENTS.md` 或 `opencode.md` 的工具)与项目的贡献者
+列表不是一回事。
 
 ## 快速开始
 
@@ -57,6 +58,18 @@ opencode.md              # 适配器:用于解析 @./path 导入的 agent
 
 `CLAUDE.md`、`AGENTS.md` 与 `opencode.md` 不复制 `.ai/` 中的任何内容,只做指向。每个 agent
 读到的是同一套文件、同样的顺序。
+
+## 工作原理
+
+<p align="center">
+  <img src="pic_intro_repomemo/pic_ZH_repomemo/ZH_01.png" alt="RepoMemo 概览" width="80%">
+</p>
+
+<p align="center">
+  <img src="pic_intro_repomemo/pic_ZH_repomemo/ZH_02.png" alt="agent 如何读取脚手架" width="80%">
+  <img src="pic_intro_repomemo/pic_ZH_repomemo/ZH_03.png" alt="agent 工作流" width="80%">
+  <img src="pic_intro_repomemo/pic_ZH_repomemo/ZH_04.png" alt="多 agent 共享内存" width="80%">
+</p>
 
 ## 为什么需要它
 
@@ -132,12 +145,17 @@ repomemo init --target ./my-app  # 在另一个目录初始化
 repomemo init --force            # 覆盖已存在的文件(危险)
 repomemo check                   # 校验当前目录
 repomemo check ./my-app          # 校验另一个路径
+repomemo check --strict          # 额外校验适配器顺序和模板同步
 repomemo --version
 repomemo --help
 ```
 
 `repomemo init` **默认是安全的**:已存在的文件会被报告为 *skipped*,不会被
 静默覆盖。只有当你确实想替换现有脚手架时,才使用 `--force`。
+
+`repomemo check` 校验脚手架文件存在且非空。`repomemo check --strict`
+还会校验根适配器是否按同一顺序指向同一组 `.ai/` 文件。在 repomemo
+源码仓库中,它也会校验 `templates/` 是否与 CLI 的脚手架文件列表一致。
 
 执行 `init` 之后,请编辑生成的 `.ai/project.md` 与 `.ai/architecture.md`,
 让它们如实描述你的项目,然后整体提交。
@@ -238,6 +256,7 @@ bash bin/repomemo --help
 
 # repomemo 自身也应当通过它自己的 check
 bash bin/repomemo check .
+bash bin/repomemo check --strict .
 ```
 
 ### 发布

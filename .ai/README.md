@@ -1,9 +1,10 @@
 # `.ai/` — Shared Project Memory
 
 This directory is the **single source of truth** that AI coding agents read at
-the start of a session. Any agent that respects `AGENTS.md` or `CLAUDE.md`
-loads these files in a fixed order. The goal is simple: stop different agents
-from drifting into separate mental models of the same repository.
+the start of a session. Any agent that respects `CLAUDE.md`, `AGENTS.md`, or
+`opencode.md` loads these files in a fixed order. The goal is simple: stop
+different agents from drifting into separate mental models of the same
+repository.
 
 ## Read order
 

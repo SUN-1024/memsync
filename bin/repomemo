@@ -3,7 +3,7 @@
 #
 # Usage:
 #   repomemo init [--force] [--target DIR]
-#   repomemo check [PATH]
+#   repomemo check [--strict] [PATH]
 #   repomemo --help
 #   repomemo --version
 #
@@ -46,13 +46,29 @@ SCAFFOLD_FILES=(
   "opencode.md"
 )
 
+AI_FILES=(
+  ".ai/README.md"
+  ".ai/project.md"
+  ".ai/architecture.md"
+  ".ai/definition-of-done.md"
+  ".ai/review-checklist.md"
+  ".ai/memory.md"
+  ".ai/handoff.md"
+)
+
+ROOT_ADAPTERS=(
+  "CLAUDE.md"
+  "AGENTS.md"
+  "opencode.md"
+)
+
 usage() {
   cat <<EOF
 repomemo ${VERSION} — shared AI project memory scaffold
 
 USAGE
   repomemo init [--force] [--target DIR]
-  repomemo check [PATH]
+  repomemo check [--strict] [PATH]
   repomemo --help
   repomemo --version
 
@@ -61,10 +77,12 @@ COMMANDS
            Existing files are skipped. Use --force to overwrite them.
   check    Validate that PATH (default: cwd) contains a complete .ai/ scaffold.
            Exits non-zero if any required file is missing or empty.
+           Use --strict to also verify adapter ordering and template sync.
 
 OPTIONS
   --force         For init: overwrite existing files instead of skipping them.
   --target DIR    For init: target directory (defaults to current directory).
+  --strict        For check: verify root adapters and templates agree.
   --help, -h      Show this message.
   --version, -v   Show the version number.
 
@@ -89,6 +107,121 @@ prepare_target() {
     exit 2
   fi
   mkdir -p "$target"
+}
+
+expected_ai_files() {
+  printf "%s\n" "${AI_FILES[@]}"
+}
+
+extract_at_imports() {
+  local path="$1"
+  sed -n \
+    -e 's/^[[:space:]]*@\.\/\(\.ai\/.*\)[[:space:]]*$/\1/p' \
+    -e 's/^[[:space:]]*@\(\.ai\/.*\)[[:space:]]*$/\1/p' \
+    "$path"
+}
+
+extract_agents_list() {
+  local path="$1"
+  sed -n 's/^[[:space:]]*[0-9][0-9]*\.[[:space:]]*`\(\.ai\/[^`]*\)`.*/\1/p' "$path"
+}
+
+strict_pass() {
+  printf "PASS  %-30s %s\n" "$1" "$2"
+}
+
+strict_fail() {
+  printf "FAIL  %-30s %s\n" "$1" "$2"
+}
+
+check_expected_list() {
+  local label="$1"
+  local actual="$2"
+  local expected="$3"
+
+  if [ "$actual" = "$expected" ]; then
+    strict_pass "$label" "matches .ai read order"
+    return 0
+  fi
+
+  strict_fail "$label" "does not match .ai read order"
+  echo "      expected:"
+  printf "%s\n" "$expected" | sed 's/^/        /'
+  echo "      actual:"
+  if [ -n "$actual" ]; then
+    printf "%s\n" "$actual" | sed 's/^/        /'
+  else
+    echo "        (none)"
+  fi
+  return 1
+}
+
+check_files_match() {
+  local label="$1"
+  local left="$2"
+  local right="$3"
+
+  if cmp -s "$left" "$right"; then
+    strict_pass "$label" "matches"
+    return 0
+  fi
+
+  strict_fail "$label" "differs"
+  return 1
+}
+
+run_strict_checks() {
+  local target="$1"
+  local failures=0
+  local expected
+  expected="$(expected_ai_files)"
+
+  local claude_imports opencode_imports agents_list
+  claude_imports="$(extract_at_imports "$target/CLAUDE.md")"
+  opencode_imports="$(extract_at_imports "$target/opencode.md")"
+  agents_list="$(extract_agents_list "$target/AGENTS.md")"
+
+  check_expected_list "CLAUDE.md imports" "$claude_imports" "$expected" \
+    || failures=$((failures + 1))
+  check_expected_list "opencode.md imports" "$opencode_imports" "$expected" \
+    || failures=$((failures + 1))
+  check_expected_list "AGENTS.md list" "$agents_list" "$expected" \
+    || failures=$((failures + 1))
+
+  check_files_match "CLAUDE/opencode" "$target/CLAUDE.md" "$target/opencode.md" \
+    || failures=$((failures + 1))
+
+  local templates_dir="$target/templates"
+  if [ -d "$templates_dir" ]; then
+    local expected_templates actual_templates
+    expected_templates="$(printf "%s\n" "${SCAFFOLD_FILES[@]}" | sort)"
+    actual_templates="$(cd "$templates_dir" && find . -type f | sed 's#^\./##' | sort)"
+
+    if [ "$actual_templates" = "$expected_templates" ]; then
+      strict_pass "templates file set" "matches SCAFFOLD_FILES"
+    else
+      strict_fail "templates file set" "does not match SCAFFOLD_FILES"
+      echo "      expected:"
+      printf "%s\n" "$expected_templates" | sed 's/^/        /'
+      echo "      actual:"
+      if [ -n "$actual_templates" ]; then
+        printf "%s\n" "$actual_templates" | sed 's/^/        /'
+      else
+        echo "        (none)"
+      fi
+      failures=$((failures + 1))
+    fi
+
+    local adapter
+    for adapter in "${ROOT_ADAPTERS[@]}"; do
+      check_files_match "templates/$adapter" "$target/$adapter" "$templates_dir/$adapter" \
+        || failures=$((failures + 1))
+    done
+  else
+    strict_pass "templates/" "not present; skipped template sync checks"
+  fi
+
+  return "$failures"
 }
 
 cmd_init() {
@@ -176,17 +309,36 @@ cmd_init() {
 
 cmd_check() {
   local target="."
-  if [ $# -gt 0 ]; then
+  local target_set=0
+  local strict=0
+
+  while [ $# -gt 0 ]; do
     case "$1" in
+      --strict)
+        strict=1
+        shift
+        ;;
       -h|--help)
         usage
         return 0
         ;;
+      -*)
+        err "unknown option for check: $1"
+        echo "Run 'repomemo --help' for usage." >&2
+        exit 2
+        ;;
       *)
+        if [ "$target_set" -eq 1 ]; then
+          err "check accepts at most one path"
+          echo "Run 'repomemo --help' for usage." >&2
+          exit 2
+        fi
         target="$1"
+        target_set=1
+        shift
         ;;
     esac
-  fi
+  done
 
   if [ ! -d "$target" ]; then
     err "path does not exist or is not a directory: $target"
@@ -207,9 +359,26 @@ cmd_check() {
     fi
   done
 
+  if [ "$strict" -eq 1 ]; then
+    echo
+    echo "Strict checks:"
+    if [ "$fail" -gt 0 ]; then
+      strict_fail "strict prerequisites" "base scaffold is incomplete"
+      fail=$((fail + 1))
+    else
+      local strict_failures=0
+      run_strict_checks "$target" || strict_failures=$?
+      fail=$((fail + strict_failures))
+    fi
+  fi
+
   echo
   if [ "$fail" -eq 0 ]; then
-    echo "repomemo check: OK (${#SCAFFOLD_FILES[@]} files)"
+    if [ "$strict" -eq 1 ]; then
+      echo "repomemo check: OK (${#SCAFFOLD_FILES[@]} files, strict)"
+    else
+      echo "repomemo check: OK (${#SCAFFOLD_FILES[@]} files)"
+    fi
     return 0
   fi
 

@@ -11,7 +11,9 @@ considered done.
 
 - **Smoke test the CLI**: `bash bin/repomemo --version` and `bash bin/repomemo --help`.
 - **Run the integration test suite**: `bash tests/test_repomemo.sh`.
-- **Self-check**: `bash bin/repomemo check .` (repomemo's own `.ai/` must pass).
+- **Self-check**: `bash bin/repomemo check .` and
+  `bash bin/repomemo check --strict .` (repomemo's own `.ai/`, root adapters,
+  and templates must pass).
 
 There is no compiler, linter, formatter, or typechecker configured for this
 repository. Any change to that decision should be documented here in the
@@ -56,9 +58,9 @@ same commit.
   repository and must not lie.
 - Diffs touching `bin/repomemo` are reviewed alongside `tests/test_repomemo.sh`
   — new behavior gets a test.
-- Diffs touching `CLAUDE.md`, `AGENTS.md`, `templates/CLAUDE.md`, or
-  `templates/AGENTS.md` land **together** when the read order or file list
-  changes.
+- Diffs touching `CLAUDE.md`, `AGENTS.md`, `opencode.md`,
+  `templates/CLAUDE.md`, `templates/AGENTS.md`, or `templates/opencode.md`
+  land **together** when the read order or file list changes.
 - Diffs touching `homebrew/repomemo.rb` reference a real release tag and
   SHA256 once the tag exists; placeholder SHA256 values are flagged.
 
@@ -66,4 +68,5 @@ same commit.
 
 - `bash tests/test_repomemo.sh` exits 0.
 - `bash bin/repomemo check .` exits 0.
+- `bash bin/repomemo check --strict .` exits 0.
 - `git status` is clean before opening the PR.

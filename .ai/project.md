@@ -23,8 +23,8 @@ generates: repomemo's own `.ai/` directory follows the convention it ships.
 
 - **Engineers running multiple AI coding agents on the same repo** — the
   primary audience.
-- **Engineers running any single agent** that respects `AGENTS.md` or
-  `CLAUDE.md` — still benefits from the structure.
+- **Engineers running any single agent** that respects `CLAUDE.md`,
+  `AGENTS.md`, or `opencode.md` — still benefits from the structure.
 - **Reviewers** of agent-authored PRs — `review-checklist.md` and
   `definition-of-done.md` give them a stable rubric.
 - **Maintainers of repomemo** — install via Homebrew, the curl one-liner,
@@ -60,8 +60,8 @@ generates: repomemo's own `.ai/` directory follows the convention it ships.
 - Bash-compatible (works under macOS `/bin/bash` and Linux `/usr/bin/env bash`).
 - Markdown only inside `.ai/` so any agent can read it.
 - Tool-agnostic wording inside `.ai/`.
-- Cross-platform: avoid symlinks; keep `CLAUDE.md` and `AGENTS.md` as real
-  files so Windows and shallow clones work.
+- Cross-platform: avoid symlinks; keep `CLAUDE.md`, `AGENTS.md`, and
+  `opencode.md` as real files so Windows and shallow clones work.
 - The CLI is **safe by default**: `init` never overwrites without `--force`.
 
 ## Runtime assumptions

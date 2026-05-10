@@ -106,6 +106,7 @@ test_help() {
   assert_contains "$out" "init"   "help mentions init"  || return 1
   assert_contains "$out" "check"  "help mentions check" || return 1
   assert_contains "$out" "--force" "help mentions --force" || return 1
+  assert_contains "$out" "--strict" "help mentions --strict" || return 1
 }
 
 # 3. init creates every scaffold file in a clean target directory.
@@ -189,13 +190,56 @@ test_check_fails_on_empty() {
   assert_contains "$out" "repomemo check:" "summary line"   || return 1
 }
 
-# 8. repomemo passes its own check (the repo follows the convention it ships).
+# 8. strict check passes on a freshly initialized directory.
+test_check_strict_passes_after_init() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+  local out rc
+  out="$(bash "$MEMSYNC" check --strict "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+  assert_contains "$out" "Strict checks:" "strict section" || return 1
+  assert_contains "$out" "CLAUDE.md imports" "strict checks CLAUDE imports" || return 1
+  assert_contains "$out" "opencode.md imports" "strict checks opencode imports" || return 1
+  assert_contains "$out" "AGENTS.md list" "strict checks AGENTS list" || return 1
+  assert_contains "$out" "repomemo check: OK (10 files, strict)" "strict OK summary" || return 1
+}
+
+# 9. strict check catches adapter drift even when all files exist.
+test_check_strict_fails_on_adapter_drift() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+  echo "@.ai/README.md" > "$WORK/opencode.md"
+
+  local out rc
+  out="$(bash "$MEMSYNC" check --strict "$WORK" 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    echo "  expected non-zero exit, got 0" >&2
+    echo "$out" | sed 's/^/    /' >&2
+    return 1
+  fi
+  assert_contains "$out" "opencode.md imports" "reports opencode import drift" || return 1
+  assert_contains "$out" "does not match .ai read order" "reports wrong read order" || return 1
+  assert_contains "$out" "CLAUDE/opencode" "reports adapter content drift" || return 1
+}
+
+# 10. repomemo passes its own check (the repo follows the convention it ships).
 test_self_check() {
   local out rc
   out="$(bash "$MEMSYNC" check "$ROOT" 2>&1)"
   rc=$?
   assert_eq "$rc" "0" "exit code on self-check" \
     || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+}
+
+# 11. repomemo passes its own strict check, including template sync.
+test_self_strict_check() {
+  local out rc
+  out="$(bash "$MEMSYNC" check --strict "$ROOT" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code on strict self-check" \
+    || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+  assert_contains "$out" "templates file set" "strict checks template file set" || return 1
+  assert_contains "$out" "templates/opencode.md" "strict checks opencode template" || return 1
 }
 
 echo "running repomemo integration tests against $MEMSYNC"
@@ -208,7 +252,10 @@ run_test "repomemo init is idempotent"              test_init_idempotent
 run_test "repomemo init --force overwrites"         test_init_force_overwrites
 run_test "repomemo check passes after init"         test_check_passes_after_init
 run_test "repomemo check fails on empty dir"        test_check_fails_on_empty
+run_test "repomemo check --strict passes after init" test_check_strict_passes_after_init
+run_test "repomemo check --strict catches adapter drift" test_check_strict_fails_on_adapter_drift
 run_test "repomemo passes its own check"            test_self_check
+run_test "repomemo passes its own strict check"     test_self_strict_check
 
 echo
 echo "summary: ${PASS} passed, ${FAIL} failed"

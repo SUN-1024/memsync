@@ -14,8 +14,9 @@ repomemo check     # validate the scaffold is complete and non-empty
 
 repomemo is **tool-neutral**. It is not authored by, owned by, or specific to
 any single AI agent. The list of supported / compatible agents (Claude Code,
-Codex, Cursor, and any other tool that reads `CLAUDE.md` or `AGENTS.md`) is
-not the same as the list of project contributors.
+OpenCode, Codex, Cursor, and any other tool that reads `CLAUDE.md`,
+`AGENTS.md`, or `opencode.md`) is not the same as the list of project
+contributors.
 
 ## Quick start
 
@@ -59,6 +60,18 @@ opencode.md              # adapter for agents that resolve @./path imports
 
 `CLAUDE.md`, `AGENTS.md`, and `opencode.md` never duplicate content; they only
 point into `.ai/`. Every agent sees the same files in the same order.
+
+## How it works
+
+<p align="center">
+  <img src="pic_intro_repomemo/pic_EN_repomemo/EN_01.png" alt="RepoMemo overview" width="80%">
+</p>
+
+<p align="center">
+  <img src="pic_intro_repomemo/pic_EN_repomemo/EN_02.png" alt="How agents read the scaffold" width="80%">
+  <img src="pic_intro_repomemo/pic_EN_repomemo/EN_03.png" alt="Agent workflow" width="80%">
+  <img src="pic_intro_repomemo/pic_EN_repomemo/EN_04.png" alt="Multi-agent shared memory" width="80%">
+</p>
 
 ## Why
 
@@ -138,6 +151,7 @@ repomemo init --target ./my-app  # initialize in a different directory
 repomemo init --force            # overwrite existing files (dangerous)
 repomemo check                   # validate the current directory
 repomemo check ./my-app          # validate another path
+repomemo check --strict          # also validate adapter order and template sync
 repomemo --version
 repomemo --help
 ```
@@ -145,6 +159,11 @@ repomemo --help
 `repomemo init` is **safe by default**: existing files are reported as
 *skipped*, never overwritten silently. Pass `--force` only when you know you
 want to replace the current scaffold.
+
+`repomemo check` validates that the scaffold files exist and are non-empty.
+`repomemo check --strict` additionally verifies that the root adapters point at
+the same `.ai/` files in the same order. In the repomemo source repository, it
+also checks that `templates/` matches the CLI's scaffold file list.
 
 After running `init`, edit the generated `.ai/project.md` and
 `.ai/architecture.md` so they describe your real project, then commit
@@ -257,6 +276,7 @@ bash bin/repomemo --help
 
 # repomemo should pass its own check on this repository
 bash bin/repomemo check .
+bash bin/repomemo check --strict .
 ```
 
 ### Releases

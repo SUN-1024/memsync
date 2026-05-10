@@ -64,8 +64,10 @@ A single Bash script. Subcommands:
 
 - `init [--force] [--target DIR]` — copies every file in `templates/` into
   the target directory. Skips existing files unless `--force` is given.
-- `check [PATH]` — verifies that the target directory contains all nine
-  scaffold files and that none are empty.
+- `check [--strict] [PATH]` — verifies that the target directory contains all
+  10 scaffold files and that none are empty. With `--strict`, it also verifies
+  that the three root adapters point at the same `.ai/` files in the same
+  order, and when `templates/` exists, that templates match `SCAFFOLD_FILES`.
 - `--help` / `--version` — usage and version output.
 
 The script discovers its template directory by resolving `BASH_SOURCE[0]`
@@ -112,7 +114,7 @@ surface, not a Node implementation.
 
 Bash assertions exercising every subcommand: `--version`, `--help`, `init`
 into a temp dir, `init` again for idempotency, `check` on a populated dir,
-`check` on an empty dir.
+`check` on an empty dir, strict adapter drift detection, and strict self-check.
 
 ### `.github/workflows/release.yml` — release automation
 
@@ -147,8 +149,8 @@ package wraps the same Bash binary; it does not add a Node dependency.
 
 - For end users: the `repomemo` command after install, or `bash bin/repomemo`
   from a clone.
-- For agents working on this repo: `CLAUDE.md` (Claude Code) or `AGENTS.md`
-  (Codex / generic).
+- For agents working on this repo: `CLAUDE.md` (Claude Code), `AGENTS.md`
+  (Codex / generic), or `opencode.md` (OpenCode).
 - For human readers: `README.md` (English) or `README.zh.md` (中文).
 
 ## Visible design decisions
@@ -164,7 +166,7 @@ package wraps the same Bash binary; it does not add a Node dependency.
 4. **Homebrew via inreplace, not env vars.** The formula rewrites the
    `TEMPLATE_DIR` line at install time; the script remains a plain file
    without runtime configuration.
-5. **Two real adapter files, not a symlink.** Different agents read
+5. **Three real adapter files, not symlinks.** Different agents read
    different files; symlinks behave inconsistently across OSes and shallow
    clones.
 6. **English inside `.ai/`.** Any agent should be able to read it. The
