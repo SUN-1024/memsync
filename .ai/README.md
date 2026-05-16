@@ -31,6 +31,8 @@ into this directory; do not duplicate content into them.
   relevant `.ai/` file. Keep entries concise.
 - When the project's purpose, stack, or architecture changes, update
   `project.md` and/or `architecture.md` directly.
+- Do NOT store project knowledge in any agent-private memory system. The
+  `.ai/` files are the shared memory — every agent must be able to read them.
 - Never write `TODO`, `TBD`, or placeholder text into `.ai/`. If a fact is not
   defined in the repository, write one clear sentence saying so.
 

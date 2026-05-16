@@ -28,5 +28,9 @@ If the project's purpose, stack, or architecture itself changed, update
 `.ai/project.md` or `.ai/architecture.md` directly so the next session sees
 the truth.
 
+Do NOT store project knowledge in any agent-private memory system. Write it to
+the `.ai/` files listed above so every agent (Claude Code, Codex, OpenCode) can
+read it.
+
 Never write `TODO`, `TBD`, or placeholder text into any `.ai/` file. If a fact
 is genuinely undefined, write one clear sentence saying so.

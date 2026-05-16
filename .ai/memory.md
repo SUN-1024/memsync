@@ -91,6 +91,11 @@ task. Remove entries that go stale.
 
 ## Common pitfalls
 
+- Some agents have built-in private memory systems (e.g. Claude Code's
+  `~/.claude/projects/.../memory/`). These compete with `.ai/memory.md`.
+  Root adapters now include instructions to route project knowledge to
+  `.ai/` instead of agent-private stores. Private memory is for user
+  preferences only.
 - Do not add a hook configuration (`.claude/settings.json`, Cursor rules,
   etc.) here. Hooks belong to the consuming project and depend on its
   language and tooling.
