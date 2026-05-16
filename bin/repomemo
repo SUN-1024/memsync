@@ -5,6 +5,7 @@
 #   repomemo init [--force] [--target DIR]
 #   repomemo check [--strict|--verify] [PATH]
 #   repomemo upgrade [--fetch] [--target DIR]
+#   repomemo fix [--target DIR]
 #   repomemo --help
 #   repomemo --version
 #
@@ -71,6 +72,7 @@ USAGE
   repomemo init [--force] [--target DIR]
   repomemo check [--strict|--verify] [PATH]
   repomemo upgrade [--fetch] [--target DIR]
+  repomemo fix [--target DIR]
   repomemo --help
   repomemo --version
 
@@ -86,6 +88,9 @@ COMMANDS
            the latest local templates. Use --fetch to pull the latest
            templates from the GitHub main branch first. .ai/ files are
            never touched.
+  fix      Repair problems detected by check --verify. Restores corrupted
+           adapters, fills missing .ai/ files, and warns about external
+           memory stores. Runs check --verify afterward.
 
 OPTIONS
   --force         For init: overwrite existing files instead of skipping them.
@@ -647,6 +652,137 @@ cmd_upgrade() {
   fi
 }
 
+# Detect whether a CLAUDE.md / opencode.md adapter is corrupted (no @imports).
+adapter_is_corrupted() {
+  local path="$1"
+  [ ! -f "$path" ] && return 0
+  local imports
+  imports="$(extract_at_imports "$path" 2>/dev/null)"
+  [ -z "$imports" ]
+}
+
+# Detect whether an AGENTS.md adapter is corrupted (no numbered .ai/ list).
+agents_is_corrupted() {
+  local path="$1"
+  [ ! -f "$path" ] && return 0
+  local list
+  list="$(extract_agents_list "$path" 2>/dev/null)"
+  [ -z "$list" ]
+}
+
+cmd_fix() {
+  local target="."
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --target)
+        if [ $# -lt 2 ]; then
+          err "--target requires a directory argument"
+          exit 2
+        fi
+        target="$2"
+        shift 2
+        ;;
+      --target=*)
+        target="${1#--target=}"
+        shift
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        err "unknown option for fix: $1"
+        echo "Run 'repomemo --help' for usage." >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  if [ ! -d "$TEMPLATE_DIR" ]; then
+    err "template directory not found at: $TEMPLATE_DIR"
+    err "this build of repomemo is broken — please reinstall."
+    exit 1
+  fi
+
+  if [ ! -d "$target" ]; then
+    err "path does not exist or is not a directory: $target"
+    exit 1
+  fi
+
+  local fixed=0
+
+  # 1. Fix corrupted root adapters.
+  local adapter
+  for adapter in "${ROOT_ADAPTERS[@]}"; do
+    local dst="$target/$adapter"
+    local src="$TEMPLATE_DIR/$adapter"
+
+    if [ ! -f "$src" ]; then
+      err "template missing: $adapter — skipping fix for this file"
+      continue
+    fi
+
+    local corrupted=0
+    case "$adapter" in
+      CLAUDE.md|opencode.md)
+        adapter_is_corrupted "$dst" && corrupted=1
+        ;;
+      AGENTS.md)
+        agents_is_corrupted "$dst" && corrupted=1
+        ;;
+    esac
+
+    if [ "$corrupted" -eq 1 ]; then
+      if [ -f "$dst" ] && [ -s "$dst" ]; then
+        local saved="$target/.ai/recovered-${adapter%.md}.md"
+        echo "# Recovered from ${adapter} ($(date -u +%Y-%m-%dT%H:%M:%SZ))" > "$saved"
+        echo >> "$saved"
+        cat "$dst" >> "$saved"
+        echo "recovered  $adapter -> .ai/recovered-${adapter%.md}.md (old content saved)"
+      fi
+      cp "$src" "$dst"
+      echo "fixed      $adapter (restored from template)"
+      fixed=$((fixed + 1))
+    else
+      echo "ok         $adapter"
+    fi
+  done
+
+  # 2. Restore any missing .ai/ files.
+  local ai_file
+  for ai_file in "${AI_FILES[@]}"; do
+    local dst="$target/$ai_file"
+    local src="$TEMPLATE_DIR/$ai_file"
+
+    if [ ! -f "$dst" ]; then
+      if [ -f "$src" ]; then
+        mkdir -p "$(dirname "$dst")"
+        cp "$src" "$dst"
+        echo "restored   $ai_file (was missing, filled from template)"
+        fixed=$((fixed + 1))
+      else
+        err "template missing: $ai_file — cannot restore"
+      fi
+    fi
+  done
+
+  # 3. Check for Claude Code private memory and warn.
+  local cc_memory_dir="${HOME}/.claude/projects"
+  if [ -d "$cc_memory_dir" ]; then
+    echo
+    echo "Note: Claude Code private memory directory exists at ${cc_memory_dir}"
+    echo "      If it contains project knowledge, move it to .ai/memory.md,"
+    echo "      then delete the private entries to avoid split-brain."
+  fi
+
+  echo
+  echo "repomemo fix: ${fixed} item(s) repaired"
+  echo
+  echo "Running check --verify to confirm state..."
+  cmd_check --verify "$target"
+}
+
 main() {
   if [ $# -eq 0 ]; then
     usage
@@ -665,6 +801,10 @@ main() {
     upgrade)
       shift
       cmd_upgrade "$@"
+      ;;
+    fix)
+      shift
+      cmd_fix "$@"
       ;;
     -h|--help|help)
       usage
