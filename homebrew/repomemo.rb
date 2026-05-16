@@ -2,7 +2,7 @@ class Repomemo < Formula
   desc "CLI that initializes shared AI project memory in any repository"
   homepage "https://github.com/SUN-1024/repomemo"
   url "https://github.com/SUN-1024/repomemo/archive/refs/tags/v1.3.0.tar.gz"
-  sha256 "TBD"
+  sha256 "7391987dc632f4b93f6a365d05214d199dad9d314f19cc5c828b6b50638c194a"
   license "MIT"
   version "1.3.0"
 
