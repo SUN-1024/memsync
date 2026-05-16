@@ -1,10 +1,10 @@
 class Repomemo < Formula
   desc "CLI that initializes shared AI project memory in any repository"
   homepage "https://github.com/SUN-1024/repomemo"
-  url "https://github.com/SUN-1024/repomemo/archive/refs/tags/v1.1.0.tar.gz"
-  sha256 "33e4b724307fa04cc13b6edf14bf8a9d67f926aea46d57842230969a1c8b04a9"
+  url "https://github.com/SUN-1024/repomemo/archive/refs/tags/v1.2.0.tar.gz"
+  sha256 "TBD"
   license "MIT"
-  version "1.1.0"
+  version "1.2.0"
 
   # Bash 3.2+ is sufficient; macOS ships with /bin/bash 3.2 already.
   uses_from_macos "bash"
