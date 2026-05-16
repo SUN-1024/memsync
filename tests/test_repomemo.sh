@@ -106,6 +106,7 @@ test_help() {
   assert_contains "$out" "init"   "help mentions init"  || return 1
   assert_contains "$out" "check"  "help mentions check" || return 1
   assert_contains "$out" "upgrade" "help mentions upgrade" || return 1
+  assert_contains "$out" "verify"  "help mentions --verify"  || return 1
   assert_contains "$out" "--force" "help mentions --force" || return 1
   assert_contains "$out" "--strict" "help mentions --strict" || return 1
 }
@@ -327,6 +328,39 @@ test_upgrade_fails_on_missing_dir() {
   assert_contains "$out" "does not exist" "reports missing directory" || return 1
 }
 
+# 17. --verify passes after memory.md and handoff.md have been customized.
+test_verify_passes_when_customized() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  # Customize the memory files so they differ from templates.
+  echo "## Custom project knowledge" >> "$WORK/.ai/memory.md"
+  echo "## Latest task: test customization" > "$WORK/.ai/handoff.md"
+
+  local out rc
+  out="$(bash "$MEMSYNC" check --verify "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+  assert_contains "$out" "contains project knowledge" "memory customized" || return 1
+  assert_contains "$out" "has been updated" "handoff customized" || return 1
+  assert_contains "$out" "OK (10 files, strict, verify)" "verify OK summary" || return 1
+}
+
+# 18. --verify fails on a fresh init (memory files still match templates).
+test_verify_fails_on_fresh_init() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  local out rc
+  out="$(bash "$MEMSYNC" check --verify "$WORK" 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    echo "  expected non-zero exit for fresh init --verify, got 0" >&2
+    return 1
+  fi
+  assert_contains "$out" "unchanged from template" "reports memory unchanged" || return 1
+  # Adapter instructions should still pass (they're in the template now).
+  assert_contains "$out" "has no-private-memory instruction" "adapters have instruction" || return 1
+}
+
 echo "running repomemo integration tests against $MEMSYNC"
 echo
 
@@ -346,6 +380,8 @@ run_test "repomemo upgrade skips .ai/ files"        test_upgrade_skips_ai_files
 run_test "repomemo upgrade creates missing adapter" test_upgrade_creates_missing_adapter
 run_test "repomemo upgrade preserves strict check"  test_upgrade_preserves_strict_check
 run_test "repomemo upgrade fails on missing dir"    test_upgrade_fails_on_missing_dir
+run_test "repomemo check --verify passes when customized" test_verify_passes_when_customized
+run_test "repomemo check --verify fails on fresh init"   test_verify_fails_on_fresh_init
 
 echo
 echo "summary: ${PASS} passed, ${FAIL} failed"

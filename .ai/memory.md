@@ -33,6 +33,9 @@ task. Remove entries that go stale.
 - `bin/repomemo check --strict` verifies adapter read order and content drift,
   and in the repomemo source repo also verifies that `templates/` matches the
   runtime `SCAFFOLD_FILES` list.
+- `bin/repomemo check --verify` adds memory freshness checks: `.ai/memory.md`
+  and `.ai/handoff.md` must differ from their templates (proving agents are
+  writing to them), and adapters must contain the no-private-memory instruction.
 - `bin/repomemo upgrade` updates only the three root adapter files from the
   installed templates; it never touches `.ai/` files. Pass `--fetch` to
   download the latest templates from the GitHub release first.

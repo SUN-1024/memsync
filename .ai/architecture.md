@@ -64,10 +64,12 @@ A single Bash script. Subcommands:
 
 - `init [--force] [--target DIR]` — copies every file in `templates/` into
   the target directory. Skips existing files unless `--force` is given.
-- `check [--strict] [PATH]` — verifies that the target directory contains all
-  10 scaffold files and that none are empty. With `--strict`, it also verifies
-  that the three root adapters point at the same `.ai/` files in the same
-  order, and when `templates/` exists, that templates match `SCAFFOLD_FILES`.
+- `check [--strict|--verify] [PATH]` — verifies that the target directory
+  contains all 10 scaffold files and that none are empty. `--strict` adds
+  adapter ordering and template sync checks. `--verify` does all of that,
+  then checks that `.ai/memory.md` and `.ai/handoff.md` have been customized
+  (not left as template placeholders) and that adapters contain the
+  no-private-memory instruction.
 - `upgrade [--fetch] [--target DIR]` — overwrites the three root adapter
   files (`CLAUDE.md`, `AGENTS.md`, `opencode.md`) from the latest local
   templates. With `--fetch`, downloads the latest templates from the GitHub

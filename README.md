@@ -10,6 +10,7 @@ project facts, in the same order, every session.
 ```bash
 repomemo init      # scaffold .ai/, CLAUDE.md, AGENTS.md, opencode.md in the current repo
 repomemo check     # validate the scaffold is complete and non-empty
+repomemo check --verify  # also check that shared memory is actually being used
 repomemo upgrade   # update root adapters from local templates
 repomemo upgrade --fetch  # fetch latest templates from GitHub, then upgrade
 ```
@@ -157,6 +158,7 @@ repomemo upgrade --target ./my-app
 repomemo check                   # validate the current directory
 repomemo check ./my-app          # validate another path
 repomemo check --strict          # also validate adapter order and template sync
+repomemo check --verify          # strict + verify memory is actually in use
 repomemo --version
 repomemo --help
 ```
@@ -169,6 +171,10 @@ want to replace the current scaffold.
 `repomemo check --strict` additionally verifies that the root adapters point at
 the same `.ai/` files in the same order. In the repomemo source repository, it
 also checks that `templates/` matches the CLI's scaffold file list.
+`repomemo check --verify` does all of the above, then checks that `.ai/memory.md`
+and `.ai/handoff.md` have been customized (not left as template placeholders)
+and that every root adapter has the no-private-memory instruction — confirming
+the shared memory system is actually working.
 
 After running `init`, edit the generated `.ai/project.md` and
 `.ai/architecture.md` so they describe your real project, then commit
