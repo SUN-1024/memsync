@@ -247,12 +247,14 @@ run_strict_checks() {
 run_verify_checks() {
   local target="$1"
   local failures=0
+  local need_memory=0 need_handoff=0 need_adapter=0
 
   # .ai/memory.md must differ from the template — if it matches the
   # scaffold original, agents are not writing project knowledge here.
   if [ -f "$TEMPLATE_DIR/.ai/memory.md" ] && cmp -s "$TEMPLATE_DIR/.ai/memory.md" "$target/.ai/memory.md" 2>/dev/null; then
     verify_fail ".ai/memory.md" "unchanged from template — agents may be using private memory instead"
     failures=$((failures + 1))
+    need_memory=1
   else
     verify_pass ".ai/memory.md" "contains project knowledge"
   fi
@@ -262,6 +264,7 @@ run_verify_checks() {
   if [ -f "$TEMPLATE_DIR/.ai/handoff.md" ] && cmp -s "$TEMPLATE_DIR/.ai/handoff.md" "$target/.ai/handoff.md" 2>/dev/null; then
     verify_fail ".ai/handoff.md" "unchanged from template — agents may not be updating it after tasks"
     failures=$((failures + 1))
+    need_handoff=1
   else
     verify_pass ".ai/handoff.md" "has been updated"
   fi
@@ -275,6 +278,7 @@ run_verify_checks() {
     else
       verify_fail "$adapter" "missing no-private-memory instruction — run: repomemo upgrade"
       failures=$((failures + 1))
+      need_adapter=1
     fi
   done
 
@@ -285,6 +289,42 @@ run_verify_checks() {
     echo
     echo "Note: Claude Code private memory directory found at ${cc_memory_dir}"
     echo "      Project knowledge should live in .ai/memory.md, not here."
+  fi
+
+  # Print actionable fix instructions when checks fail.
+  if [ "$failures" -gt 0 ]; then
+    echo
+    echo "──────────────────────────────────────────────────────────"
+    echo "Fix instructions for AI coding agents:"
+    echo
+    if [ "$need_memory" -eq 1 ]; then
+      echo "  1. Inspect this repository (code, docs, config, git log) and write"
+      echo "     stable project facts to .ai/memory.md. Include: conventions,"
+      echo "     constraints, common pitfalls, external integrations — facts"
+      echo "     that would save the next agent time. Replace the template"
+      echo "     sections with real project knowledge."
+      echo
+    fi
+    if [ "$need_handoff" -eq 1 ]; then
+      echo "  2. Update .ai/handoff.md to reflect the current task. Overwrite"
+      echo "     the template sections with: Latest task, Files changed,"
+      echo "     Commands run, Checks performed, Current state, and"
+      echo "     Unresolved unknowns."
+      echo
+    fi
+    if [ "$need_adapter" -eq 1 ]; then
+      echo "  3. Run: repomemo upgrade"
+      echo "     This updates the root adapters with the no-private-memory"
+      echo "     instruction so project knowledge stays in .ai/ files."
+      echo
+    fi
+    echo "  Important: Do NOT re-run \"repomemo init\" to fix these issues."
+      echo "  Edit the existing .ai/ files in place. Re-running init would"
+      echo "  either skip them (no change) or with --force would overwrite"
+      echo "  any customized content and destroy project knowledge."
+      echo
+      echo "After completing these steps, re-run: repomemo check --verify"
+    echo "──────────────────────────────────────────────────────────"
   fi
 
   return "$failures"
@@ -330,6 +370,23 @@ cmd_init() {
   fi
 
   prepare_target "$target"
+
+  # Warn if .ai/ already exists — re-initializing can destroy customized content.
+  if [ -d "$target/.ai" ] && [ "$force" -eq 0 ]; then
+    echo "Note: .ai/ already exists in $target"
+    echo "      Files that already exist will be skipped."
+    echo "      Files that don't exist yet will be created from templates."
+    echo "      Do NOT use --force unless you want to overwrite ALL .ai/ files"
+    echo "      and lose any project-specific customizations."
+    echo
+  fi
+
+  if [ -d "$target/.ai" ] && [ "$force" -eq 1 ]; then
+    echo "WARNING: --force will overwrite ALL .ai/ files with templates."
+    echo "         Any project-specific knowledge in .ai/memory.md,"
+    echo "         .ai/handoff.md, .ai/project.md, etc. will be LOST."
+    echo
+  fi
 
   local created=0 skipped=0 overwritten=0 missing_template=0
   for rel in "${SCAFFOLD_FILES[@]}"; do
