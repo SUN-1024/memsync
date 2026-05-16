@@ -105,6 +105,7 @@ test_help() {
   assert_contains "$out" "USAGE" "help banner"   || return 1
   assert_contains "$out" "init"   "help mentions init"  || return 1
   assert_contains "$out" "check"  "help mentions check" || return 1
+  assert_contains "$out" "upgrade" "help mentions upgrade" || return 1
   assert_contains "$out" "--force" "help mentions --force" || return 1
   assert_contains "$out" "--strict" "help mentions --strict" || return 1
 }
@@ -242,6 +243,90 @@ test_self_strict_check() {
   assert_contains "$out" "templates/opencode.md" "strict checks opencode template" || return 1
 }
 
+# 12. upgrade updates adapter files that differ from the current templates.
+test_upgrade_updates_adapters() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  # Mutate one adapter so it no longer matches the template.
+  echo "# mutated" > "$WORK/CLAUDE.md"
+
+  local out rc
+  out="$(bash "$MEMSYNC" upgrade --target "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+  assert_contains "$out" "updated    CLAUDE.md" "reports CLAUDE updated" || return 1
+  assert_contains "$out" "up-to-date AGENTS.md" "reports AGENTS up-to-date" || return 1
+  assert_contains "$out" "up-to-date opencode.md" "reports opencode up-to-date" || return 1
+  assert_contains "$out" "1 updated, 2 up-to-date" "summary" || return 1
+
+  # After upgrade, CLAUDE.md must match the template again.
+  if ! cmp -s "$(dirname "$MEMSYNC")/../templates/CLAUDE.md" "$WORK/CLAUDE.md"; then
+    echo "  CLAUDE.md was not restored to template content" >&2
+    return 1
+  fi
+}
+
+# 13. upgrade does not touch .ai/ files, even when they differ from templates.
+test_upgrade_skips_ai_files() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  local mutated="MUTATED-CONTENT-$(date +%s)"
+  echo "$mutated" > "$WORK/.ai/memory.md"
+
+  local out rc
+  out="$(bash "$MEMSYNC" upgrade --target "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+
+  if ! grep -q "$mutated" "$WORK/.ai/memory.md"; then
+    echo "  upgrade overwrote .ai/memory.md even though it should skip .ai/ files" >&2
+    return 1
+  fi
+}
+
+# 14. upgrade creates a missing adapter file.
+test_upgrade_creates_missing_adapter() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  rm "$WORK/CLAUDE.md"
+
+  local out rc
+  out="$(bash "$MEMSYNC" upgrade --target "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "exit code" || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+  assert_contains "$out" "created    CLAUDE.md (was missing)" "recreates missing adapter" || return 1
+
+  if [ ! -f "$WORK/CLAUDE.md" ]; then
+    echo "  upgrade did not recreate missing CLAUDE.md" >&2
+    return 1
+  fi
+}
+
+# 15. upgrade leaves a clean project still passing strict check.
+test_upgrade_preserves_strict_check() {
+  bash "$MEMSYNC" init --target "$WORK" >/dev/null 2>&1 || return 1
+
+  bash "$MEMSYNC" upgrade --target "$WORK" >/dev/null 2>&1 || return 1
+
+  local out rc
+  out="$(bash "$MEMSYNC" check --strict "$WORK" 2>&1)"
+  rc=$?
+  assert_eq "$rc" "0" "strict check after upgrade" \
+    || { echo "$out" | sed 's/^/    /' >&2; return 1; }
+}
+
+# 16. upgrade on a non-existent directory fails gracefully.
+test_upgrade_fails_on_missing_dir() {
+  local out rc
+  out="$(bash "$MEMSYNC" upgrade --target "$WORK/nosuch" 2>&1)"
+  rc=$?
+  if [ "$rc" -eq 0 ]; then
+    echo "  expected non-zero exit for missing directory" >&2
+    return 1
+  fi
+  assert_contains "$out" "does not exist" "reports missing directory" || return 1
+}
+
 echo "running repomemo integration tests against $MEMSYNC"
 echo
 
@@ -256,6 +341,11 @@ run_test "repomemo check --strict passes after init" test_check_strict_passes_af
 run_test "repomemo check --strict catches adapter drift" test_check_strict_fails_on_adapter_drift
 run_test "repomemo passes its own check"            test_self_check
 run_test "repomemo passes its own strict check"     test_self_strict_check
+run_test "repomemo upgrade updates adapters"        test_upgrade_updates_adapters
+run_test "repomemo upgrade skips .ai/ files"        test_upgrade_skips_ai_files
+run_test "repomemo upgrade creates missing adapter" test_upgrade_creates_missing_adapter
+run_test "repomemo upgrade preserves strict check"  test_upgrade_preserves_strict_check
+run_test "repomemo upgrade fails on missing dir"    test_upgrade_fails_on_missing_dir
 
 echo
 echo "summary: ${PASS} passed, ${FAIL} failed"

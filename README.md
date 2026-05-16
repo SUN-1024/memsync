@@ -10,6 +10,8 @@ project facts, in the same order, every session.
 ```bash
 repomemo init      # scaffold .ai/, CLAUDE.md, AGENTS.md, opencode.md in the current repo
 repomemo check     # validate the scaffold is complete and non-empty
+repomemo upgrade   # update root adapters from local templates
+repomemo upgrade --fetch  # fetch latest templates from GitHub, then upgrade
 ```
 
 repomemo is **tool-neutral**. It is not authored by, owned by, or specific to
@@ -149,6 +151,9 @@ git clone https://github.com/SUN-1024/repomemo.git
 repomemo init                    # initialize in the current directory
 repomemo init --target ./my-app  # initialize in a different directory
 repomemo init --force            # overwrite existing files (dangerous)
+repomemo upgrade                 # update root adapters from local templates
+repomemo upgrade --fetch          # fetch latest from GitHub, then upgrade
+repomemo upgrade --target ./my-app
 repomemo check                   # validate the current directory
 repomemo check ./my-app          # validate another path
 repomemo check --strict          # also validate adapter order and template sync

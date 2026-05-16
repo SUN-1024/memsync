@@ -9,6 +9,8 @@ agent 都会以同样的顺序读到同样的项目事实。
 ```bash
 repomemo init      # 在当前仓库生成 .ai/、CLAUDE.md、AGENTS.md、opencode.md
 repomemo check     # 校验生成的脚手架是否完整、非空
+repomemo upgrade          # 从本地模板更新根适配器
+repomemo upgrade --fetch   # 先从 GitHub 拉取最新模板, 再更新
 ```
 
 repomemo 是 **工具中立** 的:它不属于任何一个 AI agent,也不是由任何一个 agent
@@ -143,6 +145,9 @@ git clone https://github.com/SUN-1024/repomemo.git
 repomemo init                    # 在当前目录初始化
 repomemo init --target ./my-app  # 在另一个目录初始化
 repomemo init --force            # 覆盖已存在的文件(危险)
+repomemo upgrade                 # 从本地模板更新根适配器
+repomemo upgrade --fetch          # 先从 GitHub 拉取, 再更新
+repomemo upgrade --target ./my-app
 repomemo check                   # 校验当前目录
 repomemo check ./my-app          # 校验另一个路径
 repomemo check --strict          # 额外校验适配器顺序和模板同步

@@ -68,6 +68,10 @@ A single Bash script. Subcommands:
   10 scaffold files and that none are empty. With `--strict`, it also verifies
   that the three root adapters point at the same `.ai/` files in the same
   order, and when `templates/` exists, that templates match `SCAFFOLD_FILES`.
+- `upgrade [--fetch] [--target DIR]` — overwrites the three root adapter
+  files (`CLAUDE.md`, `AGENTS.md`, `opencode.md`) from the latest local
+  templates. With `--fetch`, downloads the latest templates from the GitHub
+  release before applying. Never touches `.ai/` files.
 - `--help` / `--version` — usage and version output.
 
 The script discovers its template directory by resolving `BASH_SOURCE[0]`

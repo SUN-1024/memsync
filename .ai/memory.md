@@ -33,6 +33,9 @@ task. Remove entries that go stale.
 - `bin/repomemo check --strict` verifies adapter read order and content drift,
   and in the repomemo source repo also verifies that `templates/` matches the
   runtime `SCAFFOLD_FILES` list.
+- `bin/repomemo upgrade` updates only the three root adapter files from the
+  installed templates; it never touches `.ai/` files. Pass `--fetch` to
+  download the latest templates from the GitHub release first.
 - `bin/repomemo` resolves its template directory relative to its own location
   (following symlinks). The Homebrew formula rewrites the resolved path at
   install time; do not rely on environment variables for template lookup.

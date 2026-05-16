@@ -4,6 +4,7 @@
 # Usage:
 #   repomemo init [--force] [--target DIR]
 #   repomemo check [--strict] [PATH]
+#   repomemo upgrade [--fetch] [--target DIR]
 #   repomemo --help
 #   repomemo --version
 #
@@ -69,6 +70,7 @@ repomemo ${VERSION} — shared AI project memory scaffold
 USAGE
   repomemo init [--force] [--target DIR]
   repomemo check [--strict] [PATH]
+  repomemo upgrade [--fetch] [--target DIR]
   repomemo --help
   repomemo --version
 
@@ -78,10 +80,15 @@ COMMANDS
   check    Validate that PATH (default: cwd) contains a complete .ai/ scaffold.
            Exits non-zero if any required file is missing or empty.
            Use --strict to also verify adapter ordering and template sync.
+  upgrade  Update root adapter files (CLAUDE.md, AGENTS.md, opencode.md) from
+           the latest local templates. Use --fetch to download the latest
+           templates from GitHub first. .ai/ files are never touched.
 
 OPTIONS
   --force         For init: overwrite existing files instead of skipping them.
-  --target DIR    For init: target directory (defaults to current directory).
+  --target DIR    For init, upgrade: target directory (defaults to cwd).
+  --fetch         For upgrade: download latest templates from GitHub before
+                  applying. Requires curl and tar.
   --strict        For check: verify root adapters and templates agree.
   --help, -h      Show this message.
   --version, -v   Show the version number.
@@ -386,6 +393,134 @@ cmd_check() {
   return 1
 }
 
+cmd_upgrade() {
+  local target="."
+  local fetch=0
+  local fetch_dir=""
+  local template_dir="$TEMPLATE_DIR"
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --target)
+        if [ $# -lt 2 ]; then
+          err "--target requires a directory argument"
+          exit 2
+        fi
+        target="$2"
+        shift 2
+        ;;
+      --target=*)
+        target="${1#--target=}"
+        shift
+        ;;
+      --fetch)
+        fetch=1
+        shift
+        ;;
+      -h|--help)
+        usage
+        return 0
+        ;;
+      *)
+        err "unknown option for upgrade: $1"
+        echo "Run 'repomemo --help' for usage." >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  # --fetch: download latest templates from GitHub before upgrading.
+  if [ "$fetch" -eq 1 ]; then
+    if ! command -v curl >/dev/null 2>&1; then
+      err "--fetch requires curl (not found on PATH)"
+      exit 1
+    fi
+    if ! command -v tar >/dev/null 2>&1; then
+      err "--fetch requires tar (not found on PATH)"
+      exit 1
+    fi
+
+    fetch_dir="$(mktemp -d -t repomemo-fetch.XXXXXX)"
+
+    echo "Fetching latest templates from GitHub..."
+    local tag
+    tag="$(curl -fsSL https://api.github.com/repos/SUN-1024/repomemo/releases/latest 2>/dev/null | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')"
+
+    if [ -z "$tag" ]; then
+      err "failed to fetch latest release tag from GitHub API"
+      rm -rf "$fetch_dir"
+      exit 1
+    fi
+
+    echo "Latest release: $tag"
+    if ! curl -fsSL "https://github.com/SUN-1024/repomemo/archive/refs/tags/${tag}.tar.gz" | tar -xz --strip-components=1 -C "$fetch_dir" 2>/dev/null; then
+      err "failed to download or extract release tarball for $tag"
+      rm -rf "$fetch_dir"
+      exit 1
+    fi
+
+    if [ ! -d "$fetch_dir/templates" ]; then
+      err "downloaded archive does not contain templates/ directory"
+      rm -rf "$fetch_dir"
+      exit 1
+    fi
+
+    template_dir="$fetch_dir/templates"
+  fi
+
+  if [ ! -d "$template_dir" ]; then
+    err "template directory not found at: $template_dir"
+    err "this build of repomemo is broken — please reinstall."
+    if [ -n "$fetch_dir" ]; then rm -rf "$fetch_dir"; fi
+    exit 1
+  fi
+
+  if [ ! -d "$target" ]; then
+    err "path does not exist or is not a directory: $target"
+    if [ -n "$fetch_dir" ]; then rm -rf "$fetch_dir"; fi
+    exit 1
+  fi
+
+  local updated=0 uptodate=0 missing_template=0
+  for rel in "${ROOT_ADAPTERS[@]}"; do
+    local src="$template_dir/$rel"
+    local dst="$target/$rel"
+
+    if [ ! -f "$src" ]; then
+      err "template missing: $rel (looked at $src)"
+      missing_template=$((missing_template + 1))
+      continue
+    fi
+
+    if [ -f "$dst" ]; then
+      if cmp -s "$src" "$dst"; then
+        echo "up-to-date $rel"
+        uptodate=$((uptodate + 1))
+      else
+        cp "$src" "$dst"
+        echo "updated    $rel"
+        updated=$((updated + 1))
+      fi
+    else
+      cp "$src" "$dst"
+      echo "created    $rel (was missing)"
+      updated=$((updated + 1))
+    fi
+  done
+
+  echo
+  echo "repomemo upgrade: ${updated} updated, ${uptodate} up-to-date"
+  if [ "$missing_template" -gt 0 ]; then
+    err "${missing_template} template file(s) missing — installation may be incomplete."
+    if [ -n "$fetch_dir" ]; then rm -rf "$fetch_dir"; fi
+    exit 1
+  fi
+
+  if [ -n "$fetch_dir" ]; then
+    rm -rf "$fetch_dir"
+  fi
+}
+
 main() {
   if [ $# -eq 0 ]; then
     usage
@@ -400,6 +535,10 @@ main() {
     check)
       shift
       cmd_check "$@"
+      ;;
+    upgrade)
+      shift
+      cmd_upgrade "$@"
       ;;
     -h|--help|help)
       usage
