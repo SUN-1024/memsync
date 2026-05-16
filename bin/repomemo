@@ -81,14 +81,15 @@ COMMANDS
            Exits non-zero if any required file is missing or empty.
            Use --strict to also verify adapter ordering and template sync.
   upgrade  Update root adapter files (CLAUDE.md, AGENTS.md, opencode.md) from
-           the latest local templates. Use --fetch to download the latest
-           templates from GitHub first. .ai/ files are never touched.
+           the latest local templates. Use --fetch to pull the latest
+           templates from the GitHub main branch first. .ai/ files are
+           never touched.
 
 OPTIONS
   --force         For init: overwrite existing files instead of skipping them.
   --target DIR    For init, upgrade: target directory (defaults to cwd).
-  --fetch         For upgrade: download latest templates from GitHub before
-                  applying. Requires curl and tar.
+  --fetch         For upgrade: pull latest templates from the GitHub main
+                  branch before applying. Requires curl and tar.
   --strict        For check: verify root adapters and templates agree.
   --help, -h      Show this message.
   --version, -v   Show the version number.
@@ -442,19 +443,9 @@ cmd_upgrade() {
 
     fetch_dir="$(mktemp -d -t repomemo-fetch.XXXXXX)"
 
-    echo "Fetching latest templates from GitHub..."
-    local tag
-    tag="$(curl -fsSL https://api.github.com/repos/SUN-1024/repomemo/releases/latest 2>/dev/null | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p')"
-
-    if [ -z "$tag" ]; then
-      err "failed to fetch latest release tag from GitHub API"
-      rm -rf "$fetch_dir"
-      exit 1
-    fi
-
-    echo "Latest release: $tag"
-    if ! curl -fsSL "https://github.com/SUN-1024/repomemo/archive/refs/tags/${tag}.tar.gz" | tar -xz --strip-components=1 -C "$fetch_dir" 2>/dev/null; then
-      err "failed to download or extract release tarball for $tag"
+    echo "Fetching latest templates from GitHub (main branch)..."
+    if ! curl -fsSL "https://github.com/SUN-1024/repomemo/archive/refs/heads/main.tar.gz" | tar -xz --strip-components=1 -C "$fetch_dir" 2>/dev/null; then
+      err "failed to download or extract main branch tarball"
       rm -rf "$fetch_dir"
       exit 1
     fi
